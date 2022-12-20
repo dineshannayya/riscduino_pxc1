@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileContributor: Created by Dinesh Annayya <dinesha@opencores.org>
+// SPDX-FileContributor: Created by Dinesh Annayya <dinesh.annayya@gmail.com>
 //
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -23,22 +23,30 @@
 ////  https://github.com/dineshannayya/mbist_ctrl.git             ////
 ////                                                              ////
 ////  Description                                                 ////
-////	1. 1 masters and 5 slaves share bus Wishbone connection   ////
+////	1. 1 masters and 2 slaves share bus Wishbone connection   ////
 ////     M0 - WB_PORT                                             ////
+////     M1 - MAC-TX                                              ////
+////     M2 - MAC-RX                                              ////
 ////     S0 - Glbl_Reg                                            ////
-////     S1 - MBIST1                                              ////
-////     S2 - MBIST2                                              ////
-////     S3 - MBIST3                                              ////
-////     S4 - MBIST4                                              ////
+////     S1 - MAC                                                 ////
+////     S2 - MBIST/SRAM BANK                                     ////
+////   Architecturally M0 can communicate to S0/S1/S2             ////
+////      M1/M2 will communicate only S2                          ////
+////   Wishone Interconnect Build with Architecture Advantage to  ////
+////     Avoid Routing conjustion                                 ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Dinesh Annayya, dinesha@opencores.org                 ////
+////      - Dinesh Annayya, dinesh.annayya@gmail.com              ////
 ////                                                              ////
 ////  Revision :                                                  ////
-////                                                              ////
+////     0.0 - Dec 15, 2022, Dinesh A                             ////
+////           Inital Version                                     ////
+////     0.1 - Dec 17, 2022, Dinesh A                             ////
+////           A. Master Port M1/M2 Added                         ////
+////           B. Slave Port S2 Added                             ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -74,8 +82,8 @@ module wb_interconnect #(
 	parameter CH_DATA_WD = 95
         ) (
 `ifdef USE_POWER_PINS
-         input logic            vccd1,    // User area 1 1.8V supply
-         input logic            vssd1,    // User area 1 digital ground
+         input logic             vccd1,    // User area 1 1.8V supply
+         input logic             vssd1,    // User area 1 digital ground
 `endif
          input logic             scan_en,
          input logic             scan_mode,
@@ -85,137 +93,106 @@ module wb_interconnect #(
          output logic            scan_mode_o,
 
          // Clock Skew Adjust
-         input logic [3:0]      cfg_cska_wi,
-         input logic            wbd_clk_int,
-	 output logic           wbd_clk_wi,
+         input logic [3:0]       cfg_cska_wi,
+         input logic             wbd_clk_int,
+	     output logic            wbd_clk_skew,
 
-	 // Bus repeaters
-	 input [CH_CLK_WD-1:0]  ch_clk_in,
-	 output [CH_CLK_WD-1:0] ch_clk_out,
-	 input [CH_DATA_WD-1:0] ch_data_in,
-	 output [CH_DATA_WD-1:0]ch_data_out,
+	     // Bus repeaters
+	     input [CH_CLK_WD-1:0]   ch_clk_in,
+	     output [CH_CLK_WD-1:0]  ch_clk_out,
+	     input [CH_DATA_WD-1:0]  ch_data_in,
+	     output [CH_DATA_WD-1:0] ch_data_out,
 
-         input logic		clk_i, 
-         input logic            rst_n,
+         input logic		     clk_i, 
+         input logic             rst_n,
          
-         // Master 0 Interface
-         input   logic	[31:0]	m0_wbd_dat_i,
-         input   logic  [31:0]	m0_wbd_adr_i,
-         input   logic  [3:0]	m0_wbd_sel_i,
-         input   logic  	m0_wbd_we_i,
-         input   logic  	m0_wbd_cyc_i,
-         input   logic  	m0_wbd_stb_i,
-         output  logic	[31:0]	m0_wbd_dat_o,
-         output  logic		m0_wbd_ack_o,
-         output  logic		m0_wbd_err_o,
+         // Master 0 Interface - WB-HOST
+         input   logic	[31:0]	 m0_wbd_dat_i,
+         input   logic  [31:0]	 m0_wbd_adr_i,
+         input   logic  [3:0]	 m0_wbd_sel_i,
+         input   logic  	     m0_wbd_we_i,
+         input   logic  	     m0_wbd_cyc_i,
+         input   logic  	     m0_wbd_stb_i,
+         output  logic	[31:0]	 m0_wbd_dat_o,
+         output  logic		     m0_wbd_ack_o,
+         output  logic		     m0_wbd_err_o,
+
+         // Master 1 Interface - MAC-TX
+         input   logic	[31:0]	 m1_wbd_dat_i,
+         input   logic  [12:0]	 m1_wbd_adr_i,
+         input   logic  [3:0]	 m1_wbd_sel_i,
+         input   logic  	     m1_wbd_we_i,
+         input   logic  	     m1_wbd_cyc_i,
+         input   logic  	     m1_wbd_stb_i,
+         output  logic	[31:0]	 m1_wbd_dat_o,
+         output  logic		     m1_wbd_ack_o,
+         output  logic		     m1_wbd_err_o,
          
+         // Master 2 Interface - MAC-TX
+         input   logic	[31:0]	 m2_wbd_dat_i,
+         input   logic  [12:0]	 m2_wbd_adr_i,
+         input   logic  [3:0]	 m2_wbd_sel_i,
+         input   logic  	     m2_wbd_we_i,
+         input   logic  	     m2_wbd_cyc_i,
+         input   logic  	     m2_wbd_stb_i,
+         output  logic	[31:0]	 m2_wbd_dat_o,
+         output  logic		     m2_wbd_ack_o,
+         output  logic		     m2_wbd_err_o,
          
-         // Slave 0 Interface
+         // Slave 0 Interface  - GLOBAL-REG/PINMUX
          input	logic [31:0]	s0_wbd_dat_i,
          input	logic 	        s0_wbd_ack_i,
-         //input	logic 	s0_wbd_err_i, - unused
          output	logic [31:0]	s0_wbd_dat_o,
-         output	logic [7:0]	s0_wbd_adr_o,
-         output	logic [3:0]	s0_wbd_sel_o,
+         output	logic [7:0]	    s0_wbd_adr_o,
+         output	logic [3:0]	    s0_wbd_sel_o,
          output	logic 	        s0_wbd_we_o,
          output	logic 	        s0_wbd_cyc_o,
          output	logic 	        s0_wbd_stb_o,
+         //input	logic 	s0_wbd_err_i, - unused
          
-         // Slave 1 Interface
+         // Slave 1 Interface - MAC
          input	logic [31:0]	s1_wbd_dat_i,
          input	logic 	        s1_wbd_ack_i,
-         // input	logic 	s1_wbd_err_i, - unused
          output	logic [31:0]	s1_wbd_dat_o,
-         output	logic [10:0]	s1_wbd_adr_o,
-         output	logic [3:0]	s1_wbd_sel_o,
+         output	logic [12:0]	s1_wbd_adr_o,
+         output	logic [3:0]	    s1_wbd_sel_o,
          output	logic 	        s1_wbd_we_o,
          output	logic 	        s1_wbd_cyc_o,
          output	logic 	        s1_wbd_stb_o,
-         
-         // Slave 2 Interface
+         // input	logic 	s1_wbd_err_i, - unused
+
+         // Slave 2 Interface - MBIST/SRAM WRAPPER
          input	logic [31:0]	s2_wbd_dat_i,
          input	logic 	        s2_wbd_ack_i,
-         // input	logic 	s2_wbd_err_i, - unused
          output	logic [31:0]	s2_wbd_dat_o,
-         output	logic [10:0]	s2_wbd_adr_o, // glbl reg need only 8 bits
-         output	logic [3:0]	s2_wbd_sel_o,
+         output	logic [12:0]	s2_wbd_adr_o,
+         output	logic [3:0]	    s2_wbd_sel_o,
+         output	logic [9:0]	    s2_wbd_bl_o,
+         output	logic    	    s2_wbd_bry_o,
          output	logic 	        s2_wbd_we_o,
          output	logic 	        s2_wbd_cyc_o,
          output	logic 	        s2_wbd_stb_o,
+      // input	logic 	        s2_wbd_err_i, - unused
 
-         // Slave 3 Interface
-	 // Uart is 8bit interface 
-         input	logic [31:0]	s3_wbd_dat_i,
-         input	logic 	        s3_wbd_ack_i,
-         // input	logic 	s3_wbd_err_i,
-         output	logic [31:0]	s3_wbd_dat_o,
-         output	logic [10:0]	s3_wbd_adr_o, 
-         output	logic [3:0]   	s3_wbd_sel_o,
-         output	logic 	        s3_wbd_we_o,
-         output	logic 	        s3_wbd_cyc_o,
-         output	logic 	        s3_wbd_stb_o,
+         // MAC Q Occupancy computation
+         input logic [9:0]      mac_tx_qbase_addr,
+         input logic [9:0]      mac_rx_qbase_addr,
+         output logic           mac_tx_qcnt_inc,
+         output logic           mac_tx_qcnt_dec,
+         output logic           mac_rx_qcnt_inc,  
+         output logic           mac_rx_qcnt_dec       
+  
 
-         // Slave 4 Interface
-         input	logic [31:0]	s4_wbd_dat_i,
-         input	logic 	        s4_wbd_ack_i,
-         // input	logic 	s4_wbd_err_i,
-         output	logic [31:0]	s4_wbd_dat_o,
-         output	logic [10:0]	s4_wbd_adr_o, 
-         output	logic [3:0]   	s4_wbd_sel_o,
-         output	logic 	        s4_wbd_we_o,
-         output	logic 	        s4_wbd_cyc_o,
-         output	logic 	        s4_wbd_stb_o,
-
-         // Slave 5 Interface
-         input	logic [31:0]	s5_wbd_dat_i,
-         input	logic 	        s5_wbd_ack_i,
-         // input	logic 	s5_wbd_err_i, - unused
-         output	logic [31:0]	s5_wbd_dat_o,
-         output	logic [9:0]	s5_wbd_adr_o,
-         output	logic [3:0]	s5_wbd_sel_o,
-         output	logic 	        s5_wbd_we_o,
-         output	logic 	        s5_wbd_cyc_o,
-         output	logic 	        s5_wbd_stb_o,
-         
-         // Slave 6 Interface
-         input	logic [31:0]	s6_wbd_dat_i,
-         input	logic 	        s6_wbd_ack_i,
-         // input	logic 	s6_wbd_err_i, - unused
-         output	logic [31:0]	s6_wbd_dat_o,
-         output	logic [9:0]	s6_wbd_adr_o, // glbl reg need only 8 bits
-         output	logic [3:0]	s6_wbd_sel_o,
-         output	logic 	        s6_wbd_we_o,
-         output	logic 	        s6_wbd_cyc_o,
-         output	logic 	        s6_wbd_stb_o,
-
-         // Slave 7 Interface
-	 // Uart is 8bit interface 
-         input	logic [31:0]	s7_wbd_dat_i,
-         input	logic 	        s7_wbd_ack_i,
-         // input	logic 	s7_wbd_err_i,
-         output	logic [31:0]	s7_wbd_dat_o,
-         output	logic [9:0]	s7_wbd_adr_o, 
-         output	logic [3:0]   	s7_wbd_sel_o,
-         output	logic 	        s7_wbd_we_o,
-         output	logic 	        s7_wbd_cyc_o,
-         output	logic 	        s7_wbd_stb_o,
-
-         // Slave 8 Interface
-         input	logic [31:0]	s8_wbd_dat_i,
-         input	logic 	        s8_wbd_ack_i,
-         // input	logic 	s8_wbd_err_i,
-         output	logic [31:0]	s8_wbd_dat_o,
-         output	logic [9:0]	s8_wbd_adr_o, 
-         output	logic [3:0]   	s8_wbd_sel_o,
-         output	logic 	        s8_wbd_we_o,
-         output	logic 	        s8_wbd_cyc_o,
-         output	logic 	        s8_wbd_stb_o
-	);
+    );
 
 ////////////////////////////////////////////////////////////////////
 //
 // Type define
 //
+parameter TARGET_NULL    = 4'b0000;
+parameter TARGET_PINMUX  = 4'b0001;
+parameter TARGET_MAC     = 4'b0010;
+parameter TARGET_SRAM    = 4'b0011;
 
 
 // WishBone Wr Interface
@@ -223,6 +200,8 @@ typedef struct packed {
   logic	[31:0]	wbd_dat;
   logic  [31:0]	wbd_adr;
   logic  [3:0]	wbd_sel;
+  logic  [9:0]	wbd_bl;
+  logic  	wbd_bry;
   logic  	wbd_we;
   logic  	wbd_cyc;
   logic  	wbd_stb;
@@ -233,44 +212,38 @@ typedef struct packed {
 typedef struct packed { 
   logic	[31:0]	wbd_dat;
   logic  	wbd_ack;
+  logic  	wbd_lack;
   logic  	wbd_err;
 } type_wb_rd_intf;
 
 
 // Master Write Interface
 type_wb_wr_intf  m0_wb_wr;
+type_wb_wr_intf  m1_wb_wr;
+type_wb_wr_intf  m2_wb_wr;
 
 // Master Read Interface
 type_wb_rd_intf  m0_wb_rd;
+type_wb_rd_intf  m0_s0_wb_rd;
+type_wb_rd_intf  m0_s1_wb_rd;
+type_wb_rd_intf  m0_s2_wb_rd;
+
+type_wb_rd_intf  m1_wb_rd;
+type_wb_rd_intf  m1_s2_wb_rd;
+
+type_wb_rd_intf  m2_wb_rd;
+type_wb_rd_intf  m2_s2_wb_rd;
 
 // Slave Write Interface
 type_wb_wr_intf  s0_wb_wr;
 type_wb_wr_intf  s1_wb_wr;
 type_wb_wr_intf  s2_wb_wr;
-type_wb_wr_intf  s3_wb_wr;
-type_wb_wr_intf  s4_wb_wr;
-type_wb_wr_intf  s5_wb_wr;
-type_wb_wr_intf  s6_wb_wr;
-type_wb_wr_intf  s7_wb_wr;
-type_wb_wr_intf  s8_wb_wr;
 
 // Slave Read Interface
 type_wb_rd_intf  s0_wb_rd;
 type_wb_rd_intf  s1_wb_rd;
 type_wb_rd_intf  s2_wb_rd;
-type_wb_rd_intf  s3_wb_rd;
-type_wb_rd_intf  s4_wb_rd;
-type_wb_rd_intf  s5_wb_rd;
-type_wb_rd_intf  s6_wb_rd;
-type_wb_rd_intf  s7_wb_rd;
-type_wb_rd_intf  s8_wb_rd;
 
-
-type_wb_wr_intf  m_bus_wr;  // Multiplexed Master I/F
-type_wb_rd_intf  m_bus_rd;  // Multiplexed Slave I/F
-
-type_wb_wr_intf  s_bus_wr;  // Multiplexed Master I/F
-type_wb_rd_intf  s_bus_rd;  // Multiplexed Slave I/F
 
 // channel repeater
 assign ch_clk_out  = ch_clk_in;
@@ -286,37 +259,50 @@ clk_skew_adjust u_skew_wi
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (wbd_clk_int                 ), 
-	       .sel        (cfg_cska_wi                 ), 
-	       .clk_out    (wbd_clk_wi                  ) 
+	           .clk_in     (wbd_clk_int                 ), 
+	           .sel        (cfg_cska_wi                 ), 
+	           .clk_out    (wbd_clk_skew                ) 
        );
 
 //-------------------------------------------------------------------
 // EXTERNAL MEMORY MAP
 // 0x0000_0000 to 0x0000_0FFF  - GLBL
-// 0x0000_1000 to 0x0000_1FFF  - MBIST1
-// 0x0000_2000 to 0x0000_2FFF  - MBIST2
-// 0x0000_3000 to 0x0000_3FFF  - MBIST3
-// 0x0000_4000 to 0x0000_4FFF  - MBIST4
-// 0x0000_5000 to 0x0000_5FFF  - MBIST5
-// 0x0000_6000 to 0x0000_6FFF  - MBIST6
-// 0x0000_7000 to 0x0000_7FFF  - MBIST7
-// 0x0000_8000 to 0x0000_8FFF  - MBIST8
+// 0x0000_1000 to 0x0001_0FFF  - MAC
+// 0x0000_2000 to 0x0000_27FF  - SRAM-2KB - 0
+// 0x0000_2800 to 0x0000_2FFF  - SRAM-2KB - 1
+// 0x0000_3000 to 0x0000_37FF  - SRAM-2KB - 2
+// 0x0000_3800 to 0x0000_3FFF  - SRAM-2KB - 3
 // ---------------------------------------------------------------------------
 //
-wire [3:0] m0_wbd_tid_i       = (m0_wbd_adr_i[15:12] == 4'b0000  ) ? 4'b0000 :   // GLBL
-                                (m0_wbd_adr_i[15:12] == 4'b0001  ) ? 4'b0001 :   // MBIST1
-                                (m0_wbd_adr_i[15:12] == 4'b0010  ) ? 4'b0010 :   // MBIST2
-                                (m0_wbd_adr_i[15:12] == 4'b0011  ) ? 4'b0011 :   // MBIST3
-                                (m0_wbd_adr_i[15:12] == 4'b0100  ) ? 4'b0100 :   // MBIST4
-                                (m0_wbd_adr_i[15:12] == 4'b0101  ) ? 4'b0101 :   // MBIST5
-                                (m0_wbd_adr_i[15:12] == 4'b0110  ) ? 4'b0110 :   // MBIST6
-                                (m0_wbd_adr_i[15:12] == 4'b0111  ) ? 4'b0111 :   // MBIST7
-                                (m0_wbd_adr_i[15:12] == 4'b1000  ) ? 4'b1000 :   // MBIST8
-				4'b0000; 
+wire [3:0] m0_wbd_tid_i       = (m0_wbd_adr_i[15:12] == 4'b0000  ) ? TARGET_PINMUX :   // GLBL
+                                (m0_wbd_adr_i[15:12] == 4'b0001  ) ? TARGET_MAC    :   // MAC
+                                (m0_wbd_adr_i[15:13] == 3'b001   ) ? TARGET_SRAM   :   // MBIST WRAPPER
+				                 TARGET_NULL; 
+//-------------------------------------------------------------------
+// EXTERNAL MEMORY MAP
+// 0x0000_0000 to 0x0000_0FFF  - GLBL
+// 0x0000_1000 to 0x0001_0FFF  - MAC
+// 0x0000_2000 to 0x0000_27FF  - SRAM-2KB - 0
+// 0x0000_2800 to 0x0000_2FFF  - SRAM-2KB - 1
+// 0x0000_3000 to 0x0000_37FF  - SRAM-2KB - 2
+// 0x0000_3800 to 0x0000_3FFF  - SRAM-2KB - 3
+// ---------------------------------------------------------------------------
+//
+wire [3:0] m1_wbd_tid_i       = TARGET_SRAM;
 
+//-------------------------------------------------------------------
+// EXTERNAL MEMORY MAP
+// 0x0000_0000 to 0x0000_0FFF  - GLBL
+// 0x0000_1000 to 0x0001_0FFF  - MAC
+// 0x0000_2000 to 0x0000_27FF  - SRAM-2KB - 0
+// 0x0000_2800 to 0x0000_2FFF  - SRAM-2KB - 1
+// 0x0000_3000 to 0x0000_37FF  - SRAM-2KB - 2
+// 0x0000_3800 to 0x0000_3FFF  - SRAM-2KB - 3
+// ---------------------------------------------------------------------------
+//
+wire [3:0] m2_wbd_tid_i       = TARGET_SRAM;
 //----------------------------------------
-// Master Mapping
+// Master Mapping - M0
 // -------------------------------------
 assign m0_wb_wr.wbd_dat = m0_wbd_dat_i;
 assign m0_wb_wr.wbd_adr = {m0_wbd_adr_i[31:2],2'b00};
@@ -326,11 +312,39 @@ assign m0_wb_wr.wbd_cyc = m0_wbd_cyc_i;
 assign m0_wb_wr.wbd_stb = m0_wbd_stb_i;
 assign m0_wb_wr.wbd_tid = m0_wbd_tid_i;
 
-assign m0_wbd_dat_o  =  m0_wb_rd.wbd_dat;
-assign m0_wbd_ack_o  =  m0_wb_rd.wbd_ack;
-assign m0_wbd_err_o  =  m0_wb_rd.wbd_err;
+assign m0_wbd_dat_o     =  m0_wb_rd.wbd_dat;
+assign m0_wbd_ack_o     =  m0_wb_rd.wbd_ack;
+assign m0_wbd_err_o     =  m0_wb_rd.wbd_err;
 
+//----------------------------------------
+// Master Mapping - M1
+// -------------------------------------
+assign m1_wb_wr.wbd_dat = m1_wbd_dat_i;
+assign m1_wb_wr.wbd_adr = {19'h0,m1_wbd_adr_i[12:2],2'b00};
+assign m1_wb_wr.wbd_sel = m1_wbd_sel_i;
+assign m1_wb_wr.wbd_we  = m1_wbd_we_i;
+assign m1_wb_wr.wbd_cyc = m1_wbd_cyc_i;
+assign m1_wb_wr.wbd_stb = m1_wbd_stb_i;
+assign m1_wb_wr.wbd_tid = m1_wbd_tid_i;
 
+assign m1_wbd_dat_o     =  m1_wb_rd.wbd_dat;
+assign m1_wbd_ack_o     =  m1_wb_rd.wbd_ack;
+assign m1_wbd_err_o     =  m1_wb_rd.wbd_err;
+
+//----------------------------------------
+// Master Mapping - M2
+// -------------------------------------
+assign m2_wb_wr.wbd_dat = m2_wbd_dat_i;
+assign m2_wb_wr.wbd_adr = {19'h0,m2_wbd_adr_i[12:2],2'b00};
+assign m2_wb_wr.wbd_sel = m2_wbd_sel_i;
+assign m2_wb_wr.wbd_we  = m2_wbd_we_i;
+assign m2_wb_wr.wbd_cyc = m2_wbd_cyc_i;
+assign m2_wb_wr.wbd_stb = m2_wbd_stb_i;
+assign m2_wb_wr.wbd_tid = m2_wbd_tid_i;
+
+assign m2_wbd_dat_o     =  m2_wb_rd.wbd_dat;
+assign m2_wbd_ack_o     =  m2_wb_rd.wbd_ack;
+assign m2_wbd_err_o     =  m2_wb_rd.wbd_err;
 //----------------------------------------
 // Slave Mapping
 // -------------------------------------
@@ -342,176 +356,186 @@ assign m0_wbd_err_o  =  m0_wb_rd.wbd_err;
  assign  s0_wbd_cyc_o =  s0_wb_wr.wbd_cyc ;
  assign  s0_wbd_stb_o =  s0_wb_wr.wbd_stb ;
          
-// 2KB SRAM 
+ assign s0_wb_rd.wbd_dat  = s0_wbd_dat_i ;
+ assign s0_wb_rd.wbd_ack  = s0_wbd_ack_i ;
+ assign s0_wb_rd.wbd_err  = 1'b0; // s0_wbd_err_i ; - unused
+
+//--------------------------------------------
+// MAC
+//--------------------------------------------
  assign  s1_wbd_dat_o =  s1_wb_wr.wbd_dat ;
- assign  s1_wbd_adr_o =  s1_wb_wr.wbd_adr[10:0] ;
+ assign  s1_wbd_adr_o =  s1_wb_wr.wbd_adr[12:0] ;
  assign  s1_wbd_sel_o =  s1_wb_wr.wbd_sel ;
  assign  s1_wbd_we_o  =  s1_wb_wr.wbd_we  ;
  assign  s1_wbd_cyc_o =  s1_wb_wr.wbd_cyc ;
  assign  s1_wbd_stb_o =  s1_wb_wr.wbd_stb ;
                       
- assign  s2_wbd_dat_o =  s2_wb_wr.wbd_dat ;
- assign  s2_wbd_adr_o =  s2_wb_wr.wbd_adr[10:0] ; // Global Reg Need 8 bit
- assign  s2_wbd_sel_o =  s2_wb_wr.wbd_sel ;
- assign  s2_wbd_we_o  =  s2_wb_wr.wbd_we  ;
- assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;
- assign  s2_wbd_stb_o =  s2_wb_wr.wbd_stb ;
-
- assign  s3_wbd_dat_o =  s3_wb_wr.wbd_dat;
- assign  s3_wbd_adr_o =  s3_wb_wr.wbd_adr[10:0] ; // Global Reg Need 8 bit
- assign  s3_wbd_sel_o =  s3_wb_wr.wbd_sel;
- assign  s3_wbd_we_o  =  s3_wb_wr.wbd_we  ;
- assign  s3_wbd_cyc_o =  s3_wb_wr.wbd_cyc ;
- assign  s3_wbd_stb_o =  s3_wb_wr.wbd_stb ;
- 
- assign  s4_wbd_dat_o =  s4_wb_wr.wbd_dat ;
- assign  s4_wbd_adr_o =  s4_wb_wr.wbd_adr[10:0] ; // Global Reg Need 8 bit
- assign  s4_wbd_sel_o =  s4_wb_wr.wbd_sel ;
- assign  s4_wbd_we_o  =  s4_wb_wr.wbd_we  ;
- assign  s4_wbd_cyc_o =  s4_wb_wr.wbd_cyc ;
- assign  s4_wbd_stb_o =  s4_wb_wr.wbd_stb ;
-
-// 1KB SRAM 
- assign  s5_wbd_dat_o =  s5_wb_wr.wbd_dat ;
- assign  s5_wbd_adr_o =  s5_wb_wr.wbd_adr[9:0] ;
- assign  s5_wbd_sel_o =  s5_wb_wr.wbd_sel ;
- assign  s5_wbd_we_o  =  s5_wb_wr.wbd_we  ;
- assign  s5_wbd_cyc_o =  s5_wb_wr.wbd_cyc ;
- assign  s5_wbd_stb_o =  s5_wb_wr.wbd_stb ;
-                      
- assign  s6_wbd_dat_o =  s6_wb_wr.wbd_dat ;
- assign  s6_wbd_adr_o =  s6_wb_wr.wbd_adr[9:0] ; // Global Reg Need 8 bit
- assign  s6_wbd_sel_o =  s6_wb_wr.wbd_sel ;
- assign  s6_wbd_we_o  =  s6_wb_wr.wbd_we  ;
- assign  s6_wbd_cyc_o =  s6_wb_wr.wbd_cyc ;
- assign  s6_wbd_stb_o =  s6_wb_wr.wbd_stb ;
-
- assign  s7_wbd_dat_o =  s7_wb_wr.wbd_dat;
- assign  s7_wbd_adr_o =  s7_wb_wr.wbd_adr[9:0] ; // Global Reg Need 8 bit
- assign  s7_wbd_sel_o =  s7_wb_wr.wbd_sel;
- assign  s7_wbd_we_o  =  s7_wb_wr.wbd_we  ;
- assign  s7_wbd_cyc_o =  s7_wb_wr.wbd_cyc ;
- assign  s7_wbd_stb_o =  s7_wb_wr.wbd_stb ;
- 
- assign  s8_wbd_dat_o =  s8_wb_wr.wbd_dat ;
- assign  s8_wbd_adr_o =  s8_wb_wr.wbd_adr[9:0] ; // Global Reg Need 8 bit
- assign  s8_wbd_sel_o =  s8_wb_wr.wbd_sel ;
- assign  s8_wbd_we_o  =  s8_wb_wr.wbd_we  ;
- assign  s8_wbd_cyc_o =  s8_wb_wr.wbd_cyc ;
- assign  s8_wbd_stb_o =  s8_wb_wr.wbd_stb ;
- 
- assign s0_wb_rd.wbd_dat  = s0_wbd_dat_i ;
- assign s0_wb_rd.wbd_ack  = s0_wbd_ack_i ;
- assign s0_wb_rd.wbd_err  = 1'b0; // s0_wbd_err_i ; - unused
- 
  assign s1_wb_rd.wbd_dat  = s1_wbd_dat_i ;
  assign s1_wb_rd.wbd_ack  = s1_wbd_ack_i ;
  assign s1_wb_rd.wbd_err  = 1'b0; // s1_wbd_err_i ; - unused
- 
+
+//---------------------------------------------
+// 2KB * 4 SRAM 
+//---------------------------------------------
+ assign  s2_wbd_dat_o =  s2_wb_wr.wbd_dat ;
+ assign  s2_wbd_adr_o =  s2_wb_wr.wbd_adr[12:0] ;
+ assign  s2_wbd_sel_o =  s2_wb_wr.wbd_sel ;
+ assign  s2_wbd_bl_o  =  'h1 ;
+ assign  s2_wbd_bry_o =  'b1 ;
+ assign  s2_wbd_we_o  =  s2_wb_wr.wbd_we  ;
+ assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;
+ assign  s2_wbd_stb_o =  s2_wb_wr.wbd_stb ;
+                      
  assign s2_wb_rd.wbd_dat  = s2_wbd_dat_i ;
  assign s2_wb_rd.wbd_ack  = s2_wbd_ack_i ;
- assign s2_wb_rd.wbd_err  = 1'b0; // s2_wbd_err_i ; - unused
-
- assign s3_wb_rd.wbd_dat  = s3_wbd_dat_i ;
- assign s3_wb_rd.wbd_ack  = s3_wbd_ack_i ;
- assign s3_wb_rd.wbd_err  = 1'b0; // s3_wbd_err_i ; - unused
-
- assign s4_wb_rd.wbd_dat  = s4_wbd_dat_i ;
- assign s4_wb_rd.wbd_ack  = s4_wbd_ack_i ;
- assign s4_wb_rd.wbd_err  = 1'b0; // s4_wbd_err_i ; - unused
+ assign s2_wb_rd.wbd_err  = 1'b0; // s1_wbd_err_i ; - unused
  
- assign s5_wb_rd.wbd_dat  = s5_wbd_dat_i ;
- assign s5_wb_rd.wbd_ack  = s5_wbd_ack_i ;
- assign s5_wb_rd.wbd_err  = 1'b0; // s5_wbd_err_i ; - unused
- 
- assign s6_wb_rd.wbd_dat  = s6_wbd_dat_i ;
- assign s6_wb_rd.wbd_ack  = s6_wbd_ack_i ;
- assign s6_wb_rd.wbd_err  = 1'b0; // s6_wbd_err_i ; - unused
 
- assign s7_wb_rd.wbd_dat  = s7_wbd_dat_i ;
- assign s7_wb_rd.wbd_ack  = s7_wbd_ack_i ;
- assign s7_wb_rd.wbd_err  = 1'b0; // s7_wbd_err_i ; - unused
-
- assign s8_wb_rd.wbd_dat  = s8_wbd_dat_i ;
- assign s8_wb_rd.wbd_ack  = s8_wbd_ack_i ;
- assign s8_wb_rd.wbd_err  = 1'b0; // s8_wbd_err_i ; - unused
-//
-// arbitor removed as only one master
-//
-wire [1:0]  gnt = 2'b0;;
-
-
-// Generate Multiplexed Master Interface based on grant
-always_comb begin
-     case(gnt)
-        2'h0:	   m_bus_wr = m0_wb_wr;
-        default:   m_bus_wr = m0_wb_wr;
-     endcase			
-end
-
-
-// Generate Multiplexed Slave Interface based on target Id
-wire [3:0] s_wbd_tid =  s_bus_wr.wbd_tid; // to fix iverilog warning
-always_comb begin
-     case(s_wbd_tid)
-        4'h0:	   s_bus_rd = s0_wb_rd;
-        4'h1:	   s_bus_rd = s1_wb_rd;
-        4'h2:	   s_bus_rd = s2_wb_rd;
-        4'h3:	   s_bus_rd = s3_wb_rd;
-        4'h4:	   s_bus_rd = s4_wb_rd;
-        4'h5:	   s_bus_rd = s5_wb_rd;
-        4'h6:	   s_bus_rd = s6_wb_rd;
-        4'h7:	   s_bus_rd = s7_wb_rd;
-        4'h8:	   s_bus_rd = s8_wb_rd;
-        default:   s_bus_rd = s0_wb_rd;
-     endcase			
-end
-
-
+//---------------------------------------------
 // Connect Master => Slave
-assign  s0_wb_wr = (s_wbd_tid == 4'b0000) ? s_bus_wr : 'h0;
-assign  s1_wb_wr = (s_wbd_tid == 4'b0001) ? s_bus_wr : 'h0;
-assign  s2_wb_wr = (s_wbd_tid == 4'b0010) ? s_bus_wr : 'h0;
-assign  s3_wb_wr = (s_wbd_tid == 4'b0011) ? s_bus_wr : 'h0;
-assign  s4_wb_wr = (s_wbd_tid == 4'b0100) ? s_bus_wr : 'h0;
-assign  s5_wb_wr = (s_wbd_tid == 4'b0101) ? s_bus_wr : 'h0;
-assign  s6_wb_wr = (s_wbd_tid == 4'b0110) ? s_bus_wr : 'h0;
-assign  s7_wb_wr = (s_wbd_tid == 4'b0111) ? s_bus_wr : 'h0;
-assign  s8_wb_wr = (s_wbd_tid == 4'b1000) ? s_bus_wr : 'h0;
-
 // Connect Slave to Master
-assign  m0_wb_rd = (gnt == 2'b00) ? m_bus_rd : 'h0;
+//---------------------------------------------
+assign  m0_wb_rd = (m0_wbd_tid_i == TARGET_PINMUX) ? m0_s0_wb_rd :
+                   (m0_wbd_tid_i == TARGET_MAC)    ? m0_s1_wb_rd :
+                   (m0_wbd_tid_i == TARGET_SRAM)   ? m0_s2_wb_rd : 'h0;
+
+assign  m1_wb_rd = (m1_wbd_tid_i == TARGET_SRAM) ? m1_s2_wb_rd : 'h0;
+assign  m2_wb_rd = (m2_wbd_tid_i == TARGET_SRAM) ? m2_s2_wb_rd : 'h0;
 
 
+
+// M0 (WB-HOST) only can access S0 (Pinmux/Glbl Reg)
 // Stagging FF to break write and read timing path
-wb_stagging u_m_wb_stage(
-         .clk_i            (clk_i              ), 
-         .rst_n            (rst_n              ),
+wb_stagging u_s0(
+         .clk_i            (clk_i                 ), 
+         .rst_n            (rst_n                 ),
+	     .cfg_slave_id     (TARGET_PINMUX         ),
          // WishBone Input master I/P
-         .m_wbd_dat_i      (m_bus_wr.wbd_dat   ),
-         .m_wbd_adr_i      (m_bus_wr.wbd_adr   ),
-         .m_wbd_sel_i      (m_bus_wr.wbd_sel   ),
-         .m_wbd_we_i       (m_bus_wr.wbd_we    ),
-         .m_wbd_cyc_i      (m_bus_wr.wbd_cyc   ),
-         .m_wbd_stb_i      (m_bus_wr.wbd_stb   ),
-         .m_wbd_tid_i      (m_bus_wr.wbd_tid   ),
-         .m_wbd_dat_o      (m_bus_rd.wbd_dat   ),
-         .m_wbd_ack_o      (m_bus_rd.wbd_ack   ),
-         .m_wbd_err_o      (m_bus_rd.wbd_err   ),
+         .m_wbd_dat_i      (m0_wb_wr.wbd_dat      ),
+         .m_wbd_adr_i      (m0_wb_wr.wbd_adr      ),
+         .m_wbd_sel_i      (m0_wb_wr.wbd_sel      ),
+         .m_wbd_we_i       (m0_wb_wr.wbd_we       ),
+         .m_wbd_cyc_i      (m0_wb_wr.wbd_cyc      ),
+         .m_wbd_stb_i      (m0_wb_wr.wbd_stb      ),
+         .m_wbd_tid_i      (m0_wb_wr.wbd_tid      ),
+         .m_wbd_dat_o      (m0_s0_wb_rd.wbd_dat   ),
+         .m_wbd_ack_o      (m0_s0_wb_rd.wbd_ack   ),
+         .m_wbd_err_o      (m0_s0_wb_rd.wbd_err   ),
 
          // Slave Interface
-         .s_wbd_dat_i      (s_bus_rd.wbd_dat   ),
-         .s_wbd_ack_i      (s_bus_rd.wbd_ack   ),
-         .s_wbd_err_i      (s_bus_rd.wbd_err   ),
-         .s_wbd_dat_o      (s_bus_wr.wbd_dat    ),
-         .s_wbd_adr_o      (s_bus_wr.wbd_adr    ),
-         .s_wbd_sel_o      (s_bus_wr.wbd_sel    ),
-         .s_wbd_we_o       (s_bus_wr.wbd_we     ),
-         .s_wbd_cyc_o      (s_bus_wr.wbd_cyc    ),
-         .s_wbd_stb_o      (s_bus_wr.wbd_stb    ),
-         .s_wbd_tid_o      (s_bus_wr.wbd_tid    )
+         .s_wbd_dat_i      (s0_wb_rd.wbd_dat      ),
+         .s_wbd_ack_i      (s0_wb_rd.wbd_ack      ),
+         .s_wbd_err_i      (s0_wb_rd.wbd_err      ),
+         .s_wbd_dat_o      (s0_wb_wr.wbd_dat      ),
+         .s_wbd_adr_o      (s0_wb_wr.wbd_adr      ),
+         .s_wbd_sel_o      (s0_wb_wr.wbd_sel      ),
+         .s_wbd_we_o       (s0_wb_wr.wbd_we       ),
+         .s_wbd_cyc_o      (s0_wb_wr.wbd_cyc      ),
+         .s_wbd_stb_o      (s0_wb_wr.wbd_stb      ),
+         .s_wbd_tid_o      (s0_wb_wr.wbd_tid      )
 
 );
+
+// M0 (WB-HOST) only can access S1 (MAC)
+// Stagging FF to break write and read timing path
+wb_stagging u_s1(
+         .clk_i            (clk_i                 ), 
+         .rst_n            (rst_n                 ),
+	     .cfg_slave_id     (TARGET_MAC            ),
+         // WishBone Input master I/P
+         .m_wbd_dat_i      (m0_wb_wr.wbd_dat      ),
+         .m_wbd_adr_i      (m0_wb_wr.wbd_adr      ),
+         .m_wbd_sel_i      (m0_wb_wr.wbd_sel      ),
+         .m_wbd_we_i       (m0_wb_wr.wbd_we       ),
+         .m_wbd_cyc_i      (m0_wb_wr.wbd_cyc      ),
+         .m_wbd_stb_i      (m0_wb_wr.wbd_stb      ),
+         .m_wbd_tid_i      (m0_wb_wr.wbd_tid      ),
+         .m_wbd_dat_o      (m0_s1_wb_rd.wbd_dat   ),
+         .m_wbd_ack_o      (m0_s1_wb_rd.wbd_ack   ),
+         .m_wbd_err_o      (m0_s1_wb_rd.wbd_err   ),
+
+         // Slave Interface
+         .s_wbd_dat_i      (s1_wb_rd.wbd_dat   ),
+         .s_wbd_ack_i      (s1_wb_rd.wbd_ack   ),
+         .s_wbd_err_i      (s1_wb_rd.wbd_err   ),
+         .s_wbd_dat_o      (s1_wb_wr.wbd_dat    ),
+         .s_wbd_adr_o      (s1_wb_wr.wbd_adr    ),
+         .s_wbd_sel_o      (s1_wb_wr.wbd_sel    ),
+         .s_wbd_we_o       (s1_wb_wr.wbd_we     ),
+         .s_wbd_cyc_o      (s1_wb_wr.wbd_cyc    ),
+         .s_wbd_stb_o      (s1_wb_wr.wbd_stb    ),
+         .s_wbd_tid_o      (s1_wb_wr.wbd_tid    )
+
+);
+
+// M0 (WB-HOST) M1 (MAC-TX) and M2 (MAC-RX) can access S2 (SRAM/MBIST WRAPPER)
+// Target Port -0
+// QCounter Inc/dec generation
+// Ned to move this logic to wishbone interconnect
+assign mac_tx_qcnt_inc = (mac_tx_qbase_addr == s2_wb_wr.wbd_adr[15:6]) && s2_wb_wr.wbd_stb && s2_wb_wr.wbd_we  && s2_wb_rd.wbd_ack && (s2_wb_wr.wbd_sel[3] == 1'b1);
+assign mac_tx_qcnt_dec = (mac_tx_qbase_addr == s2_wb_wr.wbd_adr[15:6]) && s2_wb_wr.wbd_stb && !s2_wb_wr.wbd_we && s2_wb_rd.wbd_ack && (s2_wb_wr.wbd_sel[3] == 1'b1);
+assign mac_rx_qcnt_inc = (mac_rx_qbase_addr == s2_wb_wr.wbd_adr[15:6]) && s2_wb_wr.wbd_stb && s2_wb_wr.wbd_we  && s2_wb_rd.wbd_ack && (s2_wb_wr.wbd_sel[3] == 1'b1);
+assign mac_rx_qcnt_dec = (mac_rx_qbase_addr == s2_wb_wr.wbd_adr[15:6]) && s2_wb_wr.wbd_stb && !s2_wb_wr.wbd_we && s2_wb_rd.wbd_ack && (s2_wb_wr.wbd_sel[3] == 1'b1);
+
+wb_slave_port  u_s2 (
+
+          .clk_i                   (clk_i                  ), 
+          .rst_n                   (rst_n                  ),
+	      .cfg_slave_id            (TARGET_SRAM            ),
+
+         // Master 0 Interface
+          .m0_wbd_dat_i            (m0_wb_wr.wbd_dat       ),
+          .m0_wbd_adr_i            (m0_wb_wr.wbd_adr       ),
+          .m0_wbd_sel_i            (m0_wb_wr.wbd_sel       ),
+          .m0_wbd_we_i             (m0_wb_wr.wbd_we        ),
+          .m0_wbd_cyc_i            (m0_wb_wr.wbd_cyc       ),
+          .m0_wbd_stb_i            (m0_wb_wr.wbd_stb       ),
+	      .m0_wbd_tid_i            (m0_wb_wr.wbd_tid       ),
+          .m0_wbd_dat_o            (m0_s2_wb_rd.wbd_dat    ),
+          .m0_wbd_ack_o            (m0_s2_wb_rd.wbd_ack    ),
+          .m0_wbd_lack_o           (m0_s2_wb_rd.wbd_lack   ),
+          .m0_wbd_err_o            (m0_s2_wb_rd.wbd_err    ),
+         
+         // Master 1 Interface
+          .m1_wbd_dat_i            (m1_wb_wr.wbd_dat       ),
+          .m1_wbd_adr_i            (m1_wb_wr.wbd_adr       ),
+          .m1_wbd_sel_i            (m1_wb_wr.wbd_sel       ),
+          .m1_wbd_we_i             (m1_wb_wr.wbd_we        ),
+          .m1_wbd_cyc_i            (m1_wb_wr.wbd_cyc       ),
+          .m1_wbd_stb_i            (m1_wb_wr.wbd_stb       ),
+	      .m1_wbd_tid_i            (m1_wb_wr.wbd_tid       ),
+          .m1_wbd_dat_o            (m1_s2_wb_rd.wbd_dat    ),
+          .m1_wbd_ack_o            (m1_s2_wb_rd.wbd_ack    ),
+          .m1_wbd_lack_o           (m1_s2_wb_rd.wbd_lack   ),
+          .m1_wbd_err_o            (m1_s2_wb_rd.wbd_err    ),
+         
+         // Master 2 Interface
+          .m2_wbd_dat_i            (m2_wb_wr.wbd_dat       ),
+          .m2_wbd_adr_i            (m2_wb_wr.wbd_adr       ),
+          .m2_wbd_sel_i            (m2_wb_wr.wbd_sel       ),
+          .m2_wbd_we_i             (m2_wb_wr.wbd_we        ),
+          .m2_wbd_cyc_i            (m2_wb_wr.wbd_cyc       ),
+          .m2_wbd_stb_i            (m2_wb_wr.wbd_stb       ),
+	      .m2_wbd_tid_i            (m2_wb_wr.wbd_tid       ),
+          .m2_wbd_dat_o            (m2_s2_wb_rd.wbd_dat    ),
+          .m2_wbd_ack_o            (m2_s2_wb_rd.wbd_ack    ),
+          .m2_wbd_lack_o           (m2_s2_wb_rd.wbd_lack   ),
+          .m2_wbd_err_o            (m2_s2_wb_rd.wbd_err    ),
+
+        
+         
+         // Slave  Interface
+          .s_wbd_dat_i            (s2_wb_rd.wbd_dat        ),
+          .s_wbd_ack_i            (s2_wb_rd.wbd_ack        ),
+          .s_wbd_lack_i           (s2_wb_rd.wbd_ack        ),
+          .s_wbd_dat_o            (s2_wb_wr.wbd_dat        ),
+          .s_wbd_adr_o            (s2_wb_wr.wbd_adr        ),
+          .s_wbd_sel_o            (s2_wb_wr.wbd_sel        ),
+          .s_wbd_we_o             (s2_wb_wr.wbd_we         ),  
+          .s_wbd_cyc_o            (s2_wb_wr.wbd_cyc        ),
+          .s_wbd_stb_o            (s2_wb_wr.wbd_stb        )
+        
+	);
 
 
 endmodule

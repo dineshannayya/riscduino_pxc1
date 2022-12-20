@@ -123,7 +123,9 @@ begin
      shift_cnt   <= '0;
      scan_shift_d <= 1'b0;
    end else begin
-      if(scan_shift && (shift_cnt[7:4] < BIST_ERR_LIMIT)) begin
+      if(!scan_shift) begin
+           shift_cnt <= 'h0;
+      end else if(scan_shift && (shift_cnt[7:4] < BIST_ERR_LIMIT)) begin
          shift_cnt <= shift_cnt+1;
       end
       scan_shift_d <= scan_shift;

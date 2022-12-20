@@ -37,20 +37,20 @@ module mbist_wb
 	input  logic                            rst_n,
 
 
-        // WB I/F
-        input   logic                          wb_clk_i,  // System clock
-        input   logic                          wb_stb_i,  // strobe/request
-        input   logic [BIST_ADDR_WD-1:0]       wb_adr_i,  // address
-        input   logic [(BIST_NO_SRAM+1)/2-1:0] wb_cs_i,   // address
-        input   logic                          wb_we_i ,  // write
-        input   logic [BIST_DATA_WD-1:0]       wb_dat_i,  // data output
-        input   logic [BIST_DATA_WD/8-1:0]     wb_sel_i,  // byte enable
-        input   logic [9:0]                    wb_bl_i,   // Burst Length
-        input   logic                          wb_bry_i,  // Burst Ready
-        output  logic [BIST_DATA_WD-1:0]       wb_dat_o,  // data input
-        output  logic                          wb_ack_o,  // acknowlegement
-        output  logic                          wb_lack_o, // acknowlegement
-        output  logic                          wb_err_o,  // error
+    // WB I/F
+    input   logic                          wb_clk_i,  // System clock
+    input   logic                          wb_stb_i,  // strobe/request
+    input   logic [BIST_ADDR_WD-1:0]       wb_adr_i,  // address
+    input   logic [(BIST_NO_SRAM+1)/2-1:0] wb_cs_i,   // address
+    input   logic                          wb_we_i ,  // write
+    input   logic [BIST_DATA_WD-1:0]       wb_dat_i,  // data output
+    input   logic [BIST_DATA_WD/8-1:0]     wb_sel_i,  // byte enable
+    input   logic [9:0]                    wb_bl_i,   // Burst Length
+    input   logic                          wb_bry_i,  // Burst Ready
+    output  logic [BIST_DATA_WD-1:0]       wb_dat_o,  // data input
+    output  logic                          wb_ack_o,  // acknowlegement
+    output  logic                          wb_lack_o, // acknowlegement
+    output  logic                          wb_err_o,  // error
 
 	output  logic                          mem_req,
 	output  logic [(BIST_NO_SRAM+1)/2-1:0] mem_cs,
@@ -86,6 +86,7 @@ always @(negedge rst_n, posedge wb_clk_i) begin
        mem_bl_cnt       <= 'h0;
        mem_addr         <= 'h0;
        mem_next_addr    <= 'h0;
+	   wb_ack_o         <=  'b0;
        wb_ack_l         <= 'b0;
        wb_dat_o         <= 'h0;
        mem_req          <= 'b0;
@@ -137,7 +138,7 @@ always @(negedge rst_n, posedge wb_clk_i) begin
          end
        READ_ACTION1: begin
 	   mem_addr   <=  mem_addr +1;
-           mem_hval   <= 1'b0;
+       mem_hval   <= 1'b0;
 	   wb_ack_l   <=  'b1;
 	   mem_bl_cnt <=  'h1;
 	   state      <=  READ_ACTION2;

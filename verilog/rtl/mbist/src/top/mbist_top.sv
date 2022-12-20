@@ -65,7 +65,7 @@ module mbist_top
 
     // Clock Skew Adjust
        input  wire                           wbd_clk_int, 
-       output wire                           wbd_clk_mbist,
+       output wire                           wbd_clk_skew,
        input  wire [3:0]                     cfg_cska_mbist, // clock skew adjust for web host
 
 	input logic                            rst_n,
@@ -76,6 +76,7 @@ module mbist_top
 	input wire                            bist_shift,
 	input wire                            bist_load,
 	input wire                            bist_sdi,
+	input wire [1:0]                      bist_serial_sel,
 
 	output wire [3:0]                     bist_error_cnt0,
 	output wire [3:0]                     bist_error_cnt1,
@@ -222,7 +223,7 @@ assign mem_dout_a_i[3] = mem_dout_a3;
 
 // Towards MEMORY PORT - A
 assign mem_clk_b   = 'b0;
-assign mem_cen_b   = 'b0;
+assign mem_cen_b   = 'b1;
 assign mem_addr_b0 = 'b0;
 assign mem_addr_b1 = 'b0;
 assign mem_addr_b2 = 'b0;
@@ -248,7 +249,10 @@ assign bist_ms_sdi[0] = bist_pat_sdo;
 assign bist_ms_sdi[1] = bist_ms_sdo[0];
 assign bist_ms_sdi[2] = bist_ms_sdo[1];
 assign bist_ms_sdi[3] = bist_ms_sdo[2];
-assign bist_sdo = bist_ms_sdo[3];
+assign bist_sdo = (bist_serial_sel == 2'b00) ? bist_ms_sdo[0] :
+                  (bist_serial_sel == 2'b01) ? bist_ms_sdo[1] :
+                  (bist_serial_sel == 2'b10) ? bist_ms_sdo[2] :
+                  (bist_serial_sel == 2'b11) ? bist_ms_sdo[3] : 1'b0;
 
 // Pick the correct read path
 assign mem_rdata = wb_dat[mem_cs];
@@ -273,7 +277,7 @@ clk_skew_adjust u_skew_mbist
 `endif
 	       .clk_in     (wbd_clk_int                ), 
 	       .sel        (cfg_cska_mbist             ), 
-	       .clk_out    (wbd_clk_mbist              ) 
+	       .clk_out    (wbd_clk_skew               ) 
        );
 
 reset_sync   u_reset_sync (
@@ -353,8 +357,8 @@ mbist_addr_gen
                     .rst_n              (srst_n             ),       
                     .run                (run_addr           ),         
                     .updown             (op_updown          ),      
-                    .bist_shift         (bist_shift         ),  
-                    .bist_load          (bist_load          ),   
+                    .scan_shift         (bist_shift         ),  
+                    .scan_load          (bist_load          ),   
                     .sdi                (bist_sdi           )
 
 );
@@ -375,7 +379,7 @@ mbist_sti_sel
 
 	            .sdo                (bist_sti_sdo       ),  
 	            .last_stimulus      (last_sti           ),  
-                    .stimulus           (stimulus           ),
+                .stimulus           (stimulus           ),
 
 	            .clk                (wb_clk_i           ),  
 	            .rst_n              (srst_n             ),  
@@ -399,7 +403,7 @@ mbist_op_sel
           )
         u_op_sel (
 
-                    .op_read            (op_read               ), 
+                .op_read            (op_read               ), 
 	            .op_write           (op_write              ),
 	            .op_invert          (op_invert             ),
 	            .op_updown          (op_updown             ),
@@ -412,9 +416,9 @@ mbist_op_sel
 	            .rst_n              (srst_n                ),
 	            .scan_shift         (bist_shift            ),
 	            .sdi                (bist_sti_sdo          ),
-		    .re_init            (bist_error_correct_or ),
+		        .re_init            (bist_error_correct_or ),
 	            .run                (run_op                ),
-                    .stimulus           (stimulus              )
+                .stimulus           (stimulus              )
 
     );
 
@@ -520,43 +524,42 @@ mbist_mux
           )
        u_mem_sel (
 
-	            .scan_mode            (1'b0                       ),
+	        .scan_mode            (1'b0                       ),
 
-                    .rst_n                (srst_n                     ),
-                    // MBIST CTRL SIGNAL
-                    .bist_en              (bist_en                    ),
-                    .bist_addr            (bist_addr                  ),
-                    .bist_wdata           (bist_wdata                 ),
-                    .bist_clk             (wb_clk2_i                  ),
-                    .bist_wr              (bist_wr                    ),
-                    .bist_rd              (bist_rd                    ),
-                    .bist_error           (bist_error_correct[sram_no]),
-                    .bist_error_addr      (bist_error_addr[sram_no]   ),
-                    .bist_correct         (bist_correct[sram_no]      ),
+            .rst_n                (srst_n                     ),
+            // MBIST CTRL SIGNAL
+            .bist_en              (bist_en                    ),
+            .bist_addr            (bist_addr                  ),
+            .bist_wdata           (bist_wdata                 ),
+            .bist_clk             (wb_clk2_i                  ),
+            .bist_wr              (bist_wr                    ),
+            .bist_rd              (bist_rd                    ),
+            .bist_error           (bist_error_correct[sram_no]),
+            .bist_error_addr      (bist_error_addr[sram_no]   ),
+            .bist_correct         (bist_correct[sram_no]      ),
 		    .bist_sdi             (bist_ms_sdi[sram_no]       ),
-		    .bist_load            (bist_load                  ),
 		    .bist_shift           (bist_shift                 ),
 		    .bist_sdo             (bist_ms_sdo[sram_no]       ),
 
-                    // FUNCTIONAL CTRL SIGNAL
-                    .func_clk             (func_clk[sram_no]          ),
-                    .func_cen             (func_cen[sram_no]          ),
-	            .func_web             (func_web[sram_no]          ),
-	            .func_mask            (func_mask[sram_no]         ),
-                    .func_addr            (func_addr[sram_no]         ),
-                    .func_din             (func_din[sram_no]          ),
-                    .func_dout            (func_dout[sram_no]         ),
+            // FUNCTIONAL CTRL SIGNAL
+            .func_clk             (func_clk[sram_no]          ),
+            .func_cen             (func_cen[sram_no]          ),
+	        .func_web             (func_web[sram_no]          ),
+	        .func_mask            (func_mask[sram_no]         ),
+            .func_addr            (func_addr[sram_no]         ),
+            .func_din             (func_din[sram_no]          ),
+            .func_dout            (func_dout[sram_no]         ),
 
 
-                    // towards memory
-                    // Memory Out Port
-                    .mem_clk             (mem_clk_a[sram_no]          ),
-                    .mem_cen             (mem_cen_a[sram_no]          ),
-                    .mem_web             (mem_web_a[sram_no]          ),
-                    .mem_mask            (mem_mask_a_i[sram_no]       ),
-                    .mem_addr            (mem_addr_a_i[sram_no]       ),
-                    .mem_din             (mem_din_a_i[sram_no]        ),
-                    .mem_dout            (mem_dout_a_i[sram_no]       )
+            // towards memory
+            // Memory Out Port
+            .mem_clk             (mem_clk_a[sram_no]          ),
+            .mem_cen             (mem_cen_a[sram_no]          ),
+            .mem_web             (mem_web_a[sram_no]          ),
+            .mem_mask            (mem_mask_a_i[sram_no]       ),
+            .mem_addr            (mem_addr_a_i[sram_no]       ),
+            .mem_din             (mem_din_a_i[sram_no]        ),
+            .mem_dout            (mem_dout_a_i[sram_no]       )
 
     );
 end

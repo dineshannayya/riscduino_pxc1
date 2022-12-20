@@ -95,6 +95,9 @@ assign op_repeatflag = stimulus[BIST_STI_WD-3];
 assign last_op       = (re_init) ? 1'b0 : op_sel[0];
 
 
+// Need to update the SDI chain here
+assign sdo = sdi;
+
 
 always_comb
 begin

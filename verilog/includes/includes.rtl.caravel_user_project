@@ -1,0 +1,94 @@
+# Caravel user project includes
++incdir+$(USER_PROJECT_VERILOG)/rtl/
++incdir+$(USER_PROJECT_VERILOG)/dv/common/bfm
++incdir+$(USER_PROJECT_VERILOG)/dv/common/model
++incdir+$(USER_PROJECT_VERILOG)/dv/common/agents
+$(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
+
+#MBIST Wrapper
++incdir+$(USER_PROJECT_VERILOG)/rtl/mbist/include/
+$(USER_PROJECT_VERILOG)/rtl/mbist_wrapper/src/mbist_wrapper.sv  
+$(USER_PROJECT_VERILOG)/rtl/mbist_wrapper/src/mbist_wb.sv  
+
+## MBIST CORE
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/top/mbist_top.sv 
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/core/mbist_sti_sel.sv
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/core/mbist_pat_sel.sv
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/core/mbist_op_sel.sv
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/core/mbist_fsm.sv
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/core/mbist_data_cmp.sv
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/core/mbist_repair_addr.sv
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/core/mbist_mux.sv
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/core/mbist_mem_wrapper.sv
+$(USER_PROJECT_VERILOG)/rtl/mbist/src/core/mbist_addr_gen.sv
+
+## WB Inter connect
+$(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_interconnect.sv
+$(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_slave_port.sv
+
+## WB HOST
+$(USER_PROJECT_VERILOG)/rtl/wb_host/src/wb_host.sv
+
+## LBIST
+$(USER_PROJECT_VERILOG)/rtl/lbist/src/lbist_top.sv
+$(USER_PROJECT_VERILOG)/rtl/lbist/src/lbist_core.sv
+$(USER_PROJECT_VERILOG)/rtl/lbist/src/lbist_reg.sv
+
+## UART MASTER
+$(USER_PROJECT_VERILOG)/rtl/uart/src/uart_txfsm.sv
+$(USER_PROJECT_VERILOG)/rtl/uart/src/uart_rxfsm.sv
+$(USER_PROJECT_VERILOG)/rtl/uart2wb/src/uart2wb.sv
+$(USER_PROJECT_VERILOG)/rtl/uart2wb/src/uart2_core.sv
+$(USER_PROJECT_VERILOG)/rtl/uart2wb/src/uart_msg_handler.v
+
+
+## Pinmux reg
+$(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux_top.sv
+$(USER_PROJECT_VERILOG)/rtl/glbl/src/glbl_cfg.sv
+
+### GMAC Block
+$(USER_PROJECT_VERILOG)/rtl/mac_wrapper/src/mac_wrapper.sv
+$(USER_PROJECT_VERILOG)/rtl/gmac/top/g_mac_top.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_rx_top.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_deferral_rx.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_cfg_mgmt.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/dble_reg.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/s2f_sync.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_rx_fsm.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_mac_core.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/byte_reg.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_tx_top.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_tx_fsm.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_mii_intf.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_md_intf.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/mac/g_deferral.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/ctrl/eth_parser.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/crc32/g_rx_crc32.v
+$(USER_PROJECT_VERILOG)/rtl/gmac/crc32/g_tx_crc32.v
+
+#COMMON FILES
+$(USER_PROJECT_VERILOG)/rtl/lib/clk_skew_adjust.gv 
+$(USER_PROJECT_VERILOG)/rtl/lib/ctech_cells.sv 
+$(USER_PROJECT_VERILOG)/rtl/lib/reset_sync.sv  
+$(USER_PROJECT_VERILOG)/rtl/lib/ser_shift.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/wb_stagging.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/async_fifo.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/async_wb.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/clk_ctl.v
+$(USER_PROJECT_VERILOG)/rtl/lib/registers.v
+$(USER_PROJECT_VERILOG)/rtl/lib/async_reg_bus.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/clk_gate.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/crc_32.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/double_sync_low.v 
+$(USER_PROJECT_VERILOG)/rtl/lib/wb_arb.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/ser_inf_32b.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/ser_rd_inf_64b.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/stat_counter.v
+$(USER_PROJECT_VERILOG)/rtl/lib/toggle_sync.v
+$(USER_PROJECT_VERILOG)/rtl/lib/wb_rd_mem2mem.v
+$(USER_PROJECT_VERILOG)/rtl/lib/wb_wr_mem2mem.v 
+$(USER_PROJECT_VERILOG)/rtl/lib/g_dpath_ctrl.v
+$(USER_PROJECT_VERILOG)/rtl/lib/sync_wbb.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/sync_fifo2.sv
+
+$(USER_PROJECT_VERILOG)/rtl/user_project_wrapper.v

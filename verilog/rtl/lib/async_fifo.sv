@@ -56,7 +56,12 @@ later version.
 *******************************************************************/
 
 //-------------------------------------------
-// async FIFO
+// async_fifo:: async FIFO
+//    Following two ports are newly added
+//        1. At write clock domain:
+//           wr_total_free_space -->  Indicate total free transfer available 
+//        2. At read clock domain:
+//           rd_total_aval       -->  Indicate total no of transfer available
 //-----------------------------------------------
 //`timescale  1ns/1ps
 
@@ -66,11 +71,13 @@ module async_fifo (wr_clk,
                    wr_data,
                    full,                 // sync'ed to wr_clk
                    afull,                 // sync'ed to wr_clk
+                   wr_total_free_space,
                    rd_clk,
                    rd_reset_n,
                    rd_en,
                    empty,                // sync'ed to rd_clk
                    aempty,                // sync'ed to rd_clk
+                   rd_total_aval,
                    rd_data);
 
    parameter W = 4'd8;
@@ -94,9 +101,13 @@ module async_fifo (wr_clk,
    input             wr_clk, wr_reset_n, wr_en, rd_clk, rd_reset_n,
                      rd_en;
    output            full, empty;
-   output            afull, aempty;       // about full and about to empty
-
-
+   output            afull, aempty; // about full and about to empty
+   output   [AW:0]   wr_total_free_space; // Total Number of free space aval 
+                                               // w.r.t write clk
+                                               // note: Without accounting byte enables
+   output   [AW:0]   rd_total_aval;       // Total Number of words avaialble 
+                                               // w.r.t rd clock, 
+                                              // note: Without accounting byte enables
    // synopsys translate_off
 
    initial begin
@@ -123,6 +134,11 @@ module async_fifo (wr_clk,
    assign full_c  = (wr_cnt == FULL_DP) ? 1'b1 : 1'b0;
    assign afull_c = (wr_cnt == FULL_DP-1) ? 1'b1 : 1'b0;
 
+   //--------------------------
+   // Shows total number of words 
+   // of free space available w.r.t write clock
+   //--------------------------- 
+   assign wr_total_free_space = FULL_DP - wr_cnt;
 
    always @(posedge wr_clk or negedge wr_reset_n) begin
 	if (!wr_reset_n) begin
@@ -154,7 +170,7 @@ module async_fifo (wr_clk,
     end
 
     wire [AW:0] grey_rd_ptr_dly ;
-    assign #1 grey_rd_ptr_dly = grey_rd_ptr;
+    assign  grey_rd_ptr_dly = grey_rd_ptr;
 
     // read pointer synchronizer
     always @(posedge wr_clk or negedge wr_reset_n) begin
@@ -183,6 +199,11 @@ module async_fifo (wr_clk,
  
    assign empty_c  = (rd_cnt == 0) ? 1'b1 : 1'b0;
    assign aempty_c = (rd_cnt == 1) ? 1'b1 : 1'b0;
+   //--------------------------
+   // Shows total number of words 
+   // space available w.r.t write clock
+   //--------------------------- 
+   assign rd_total_aval = rd_cnt;
 
    always @(posedge rd_clk or negedge rd_reset_n) begin
       if (!rd_reset_n) begin
@@ -218,7 +239,7 @@ module async_fifo (wr_clk,
    assign rd_data  = (RD_FAST == 1) ? rd_data_c : rd_data_q;
 
     wire [AW:0] grey_wr_ptr_dly ;
-    assign #1 grey_wr_ptr_dly =  grey_wr_ptr;
+    assign  grey_wr_ptr_dly =  grey_wr_ptr;
 
     // write pointer synchronizer
     always @(posedge rd_clk or negedge rd_reset_n) begin
@@ -336,6 +357,49 @@ always @(posedge rd_clk) begin
       $stop;
    end
 end
-// synopsys translate_on
+
+// gray code monitor
+reg [AW:0] last_gwr_ptr;
+always @(posedge wr_clk or negedge wr_reset_n) begin
+   if (!wr_reset_n) begin
+      last_gwr_ptr <= 0;
+   end
+   else if (last_gwr_ptr !== grey_wr_ptr) begin
+      check_ptr_chg(last_gwr_ptr, grey_wr_ptr);
+      last_gwr_ptr <= grey_wr_ptr;
+   end 	
+end
+
+reg [AW:0] last_grd_ptr;
+always @(posedge rd_clk or negedge rd_reset_n) begin
+   if (!rd_reset_n) begin
+     last_grd_ptr <= 0;
+   end
+   else if (last_grd_ptr !== grey_rd_ptr) begin
+      check_ptr_chg(last_grd_ptr, grey_rd_ptr);
+      last_grd_ptr <=grey_rd_ptr;
+   end 	
+end
+
+task check_ptr_chg;
+input [AW:0] last_ptr;
+input [AW:0] cur_ptr;
+integer i;
+integer ptr_diff;
+begin
+   ptr_diff = 0;
+   for (i=0; i<= AW; i=i+ 1'b1) begin
+      if (last_ptr[i] != cur_ptr[i]) begin
+         ptr_diff = ptr_diff + 1'b1;
+      end
+   end
+   if (ptr_diff !== 1) begin
+      $display($time, "%m, ERROR! async fifo ptr has changed more than noe bit, last=%h, cur=%h",
+				last_ptr, cur_ptr);
+      $stop;
+   end
+end
+endtask 	
+   // synopsys translate_on
 
 endmodule

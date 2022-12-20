@@ -48,7 +48,6 @@ module   mbist_mux
 	 parameter BIST_RAD_WD_O          = BIST_ADDR_WD) (
 
       input   logic                      scan_mode,
-      input   logic                      cfg_mem_lphase,
 
       input   logic                      rst_n,
       // MBIST CTRL SIGNAL
@@ -65,142 +64,69 @@ module   mbist_mux
       input   logic                      bist_shift,
       output  logic                      bist_sdo,
 
-      // FUNCTIONAL CTRL SIGNAL
-      input   logic                      func_clk_a,
-      input   logic                      func_cen_a,
-      input   logic  [BIST_ADDR_WD-1:0]  func_addr_a,
-      // Common for func and Mbist i/f
-      output  logic  [BIST_DATA_WD-1:0]  func_dout_a,
-
-      input   logic                      func_clk_b,
-      input   logic                      func_cen_b,
-      input   logic                      func_web_b,
-      input   logic [BIST_DATA_WD/8-1:0] func_mask_b,
-      input   logic  [BIST_ADDR_WD-1:0]  func_addr_b,
-      input   logic  [BIST_DATA_WD-1:0]  func_din_b,
+      input   logic                      func_clk,
+      input   logic                      func_cen,
+      input   logic                      func_web,
+      input   logic [BIST_DATA_WD/8-1:0] func_mask,
+      input   logic  [BIST_ADDR_WD-1:0]  func_addr,
+      input   logic  [BIST_DATA_WD-1:0]  func_din,
+      output  logic  [BIST_DATA_WD-1:0]  func_dout,
 
 
      // towards memory
-      output logic                       mem_clk_a,
-      output logic                       mem_cen_a,
-      output logic   [BIST_ADDR_WD-1:0]  mem_addr_a,
-      input  logic   [BIST_DATA_WD-1:0]  mem_dout_a,
 
-      output logic                       mem_clk_b,
-      output logic                       mem_cen_b,
-      output logic                       mem_web_b,
-      output logic [BIST_DATA_WD/8-1:0]  mem_mask_b,
-      output logic   [BIST_ADDR_WD-1:0]  mem_addr_b,
-      output logic   [BIST_DATA_WD-1:0]  mem_din_b
+      output logic                       mem_clk,
+      output logic                       mem_cen,
+      output logic                       mem_web,
+      output logic [BIST_DATA_WD/8-1:0]  mem_mask,
+      output logic   [BIST_ADDR_WD-1:0]  mem_addr,
+      output logic   [BIST_DATA_WD-1:0]  mem_din,
+      input  logic   [BIST_DATA_WD-1:0]  mem_dout
     );
 
 
 parameter BIST_MASK_WD = BIST_DATA_WD/8;
 
-wire   [BIST_ADDR_WD-1:0]      addr_a;
-wire   [BIST_ADDR_WD-1:0]      addr_b;
-wire                           mem_clk_a_cts; // used for internal clock tree
-wire                           mem_clk_b_cts; // usef for internal clock tree
+wire   [BIST_ADDR_WD-1:0]      addr;
 
-//----------------------------------------------------------------
-// As there SRAM timing model is not correct. we have created
-// additional position drive data in negedge
-// ----------------------------------------------------------------
 
-logic                       mem_cen_a_int;
-logic   [BIST_ADDR_WD-1:0]  mem_addr_a_int;
 
-logic                       mem_cen_b_int;
-logic                       mem_web_b_int;
-logic [BIST_DATA_WD/8-1:0]  mem_mask_b_int;
-logic   [BIST_ADDR_WD-1:0]  mem_addr_b_int;
-logic   [BIST_DATA_WD-1:0]  mem_din_b_int;
+assign addr   = (bist_en) ? bist_addr   : func_addr;
 
-logic                       mem_cen_a_neg;
-logic   [BIST_ADDR_WD-1:0]  mem_addr_a_neg;
-
-logic                       mem_cen_b_neg;
-logic                       mem_web_b_neg;
-logic [BIST_DATA_WD/8-1:0]  mem_mask_b_neg;
-logic   [BIST_ADDR_WD-1:0]  mem_addr_b_neg;
-logic   [BIST_DATA_WD-1:0]  mem_din_b_neg;
-
-always @(negedge rst_n or negedge mem_clk_a) begin
-   if(rst_n == 0) begin
-      mem_cen_a_neg  <= '0;
-      mem_addr_a_neg <= '0;
-   end else begin
-      mem_cen_a_neg  <= mem_cen_a_int;
-      mem_addr_a_neg <= mem_addr_a_int;
-   end
-end
-
-always @(negedge rst_n or negedge mem_clk_b) begin
-   if(rst_n == 0) begin
-       mem_cen_b_neg   <= '0;
-       mem_web_b_neg   <= '0;
-       mem_mask_b_neg  <= '0;
-       mem_addr_b_neg  <= '0;
-       mem_din_b_neg   <= '0;
-   end else begin
-       mem_cen_b_neg   <= mem_cen_b_int;
-       mem_web_b_neg   <= mem_web_b_int;
-       mem_mask_b_neg  <= mem_mask_b_int;
-       mem_addr_b_neg  <= mem_addr_b_int;
-       mem_din_b_neg   <= mem_din_b_int;
-   end
-end
-
-assign mem_cen_a   = (cfg_mem_lphase == 0) ?  mem_cen_a_int  : mem_cen_a_neg;
-assign mem_addr_a  = (cfg_mem_lphase == 0) ?  mem_addr_a_int : mem_addr_a_neg;
-
-assign mem_cen_b   = (cfg_mem_lphase == 0) ?  mem_cen_b_int  : mem_cen_b_neg;
-assign mem_web_b   = (cfg_mem_lphase == 0) ?  mem_web_b_int  : mem_web_b_neg;
-assign mem_mask_b  = (cfg_mem_lphase == 0) ?  mem_mask_b_int : mem_mask_b_neg;
-assign mem_addr_b  = (cfg_mem_lphase == 0) ?  mem_addr_b_int : mem_addr_b_neg;
-assign mem_din_b   = (cfg_mem_lphase == 0) ?  mem_din_b_int  : mem_din_b_neg;
-
-//-----------------------------------------
-assign addr_a   = (bist_en) ? bist_addr   : func_addr_a;
-assign addr_b   = (bist_en) ? bist_addr   : func_addr_b;
-
-assign mem_cen_a_int    = (bist_en) ? !bist_rd   : func_cen_a;
-assign mem_cen_b_int    = (bist_en) ? !bist_wr   : func_cen_b;
-
-assign mem_web_b_int    = (bist_en) ? !bist_wr   : func_web_b;
-assign mem_mask_b_int   = (bist_en) ? {{BIST_MASK_WD}{1'b1}}       : func_mask_b;
+assign mem_cen    = (bist_en) ? !(bist_rd | bist_wr)   : func_cen;
+assign mem_web    = (bist_en) ? !bist_wr   : func_web;
+assign mem_mask   = (bist_en) ? {{BIST_MASK_WD}{1'b1}} : func_mask;
 
 //assign mem_clk_a    = (bist_en) ? bist_clk   : func_clk_a;
 //assign mem_clk_b    = (bist_en) ? bist_clk   : func_clk_b;
 
-ctech_mux2x1 u_mem_clk_a_sel (.A0 (func_clk_a),.A1 (bist_clk),.S  (bist_en),     .X  (mem_clk_a));
-ctech_mux2x1 u_mem_clk_b_sel (.A0 (func_clk_b),.A1 (bist_clk),.S  (bist_en),     .X  (mem_clk_b));
+ctech_mux2x1 u_mem_clk_sel (.A0 (func_clk),.A1 (bist_clk),.S  (bist_en),     .X  (mem_clk));
 
-ctech_clk_buf u_cts_mem_clk_a (.A (mem_clk_a), . X(mem_clk_a_cts));
-ctech_clk_buf u_cts_mem_clk_b (.A (mem_clk_b), . X(mem_clk_b_cts));
+//ctech_clk_buf u_mem_clk (.A (mem_clk_cts), . X(mem_clk));
 
-assign mem_din_b_int    = (bist_en) ? bist_wdata   : func_din_b;
+assign mem_din    = (bist_en) ? bist_wdata   : func_din;
+
 
 
 // During scan, SRAM data is unknown, feed data in back to avoid unknow
 // propagation
-assign func_dout_a   =  (scan_mode) ?  mem_din_b : mem_dout_a;
+assign func_dout   =  (scan_mode) ?  mem_din : mem_dout;
 
 mbist_repair_addr 
-      #(.BIST_ADDR_WD           (BIST_ADDR_WD),
+   #(.BIST_ADDR_WD           (BIST_ADDR_WD),
 	.BIST_DATA_WD           (BIST_DATA_WD),
 	.BIST_ADDR_START        (BIST_ADDR_START),
 	.BIST_ADDR_END          (BIST_ADDR_END),
 	.BIST_REPAIR_ADDR_START (BIST_REPAIR_ADDR_START),
 	.BIST_RAD_WD_I          (BIST_RAD_WD_I),
 	.BIST_RAD_WD_O          (BIST_RAD_WD_O)) 
-     u_repair_A(
-    .AddressOut    (mem_addr_a_int   ),
+     u_repair(
+    .AddressOut    (mem_addr         ),
     .Correct       (bist_correct     ),
     .sdo           (bist_sdo         ),
 
-    .AddressIn     (addr_a           ),
-    .clk           (mem_clk_a_cts    ),
+    .AddressIn     (addr             ),
+    .clk           (mem_clk          ),
     .rst_n         (rst_n            ),
     .Error         (bist_error       ),
     .ErrorAddr     (bist_error_addr  ),
@@ -208,27 +134,6 @@ mbist_repair_addr
     .sdi           (bist_sdi         )
 );
 
-mbist_repair_addr 
-      #(.BIST_ADDR_WD           (BIST_ADDR_WD),
-	.BIST_DATA_WD           (BIST_DATA_WD),
-	.BIST_ADDR_START        (BIST_ADDR_START),
-	.BIST_ADDR_END          (BIST_ADDR_END),
-	.BIST_REPAIR_ADDR_START (BIST_REPAIR_ADDR_START),
-	.BIST_RAD_WD_I          (BIST_RAD_WD_I),
-	.BIST_RAD_WD_O          (BIST_RAD_WD_O)) 
-    u_repair_B(
-    .AddressOut    (mem_addr_b_int  ),
-    .Correct       (                ), // Both Bist Correct are same
-    .sdo           (                ),
-
-    .AddressIn     (addr_b          ),
-    .clk           (mem_clk_b_cts   ),
-    .rst_n         (rst_n           ),
-    .Error         (bist_error      ),
-    .ErrorAddr     (bist_error_addr ),
-    .scan_shift    (1'b0            ), // Both Repair hold same address
-    .sdi           (1'b0            )
-);
 
 
 

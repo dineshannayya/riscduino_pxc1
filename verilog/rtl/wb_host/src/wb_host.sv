@@ -88,6 +88,7 @@ module wb_host
 
        output logic                wbd_int_rst_n    ,
        output logic                bist_rst_n       ,
+       output logic                mac_rst_n        ,
 
     // Master Port
        input   logic               wbm_rst_i        ,  // Regular Reset signal
@@ -312,7 +313,7 @@ wire [1:0] grnt;
 wb_arb u_arb(
 	.clk      (wbm_clk_i), 
 	.rstn     (wbm_rst_n), 
-	.req      ({1'b0,wbm_uart_stb_i,(wbm_stb_i & wbm_cyc_i)}), 
+	.req      ({1'b0,1'b0,wbm_uart_stb_i,(wbm_stb_i & wbm_cyc_i)}), 
 	.gnt      (grnt)
         );
 
@@ -341,6 +342,7 @@ ctech_buf  u_scan_buf (.A(scan_mode_int), .X(scan_mode));
 // Reset bypass for scan mode
 ctech_mux2x1 u_wb_rst_scan_sel   (.A0 (cfg_glb_ctrl[0]), .A1 (scan_rst_n), .S  (scan_mode), .X  (wbd_int_rst_n));
 ctech_mux2x1 u_bist_rst_scan_sel (.A0 (cfg_glb_ctrl[1]), .A1 (scan_rst_n), .S  (scan_mode), .X  (bist_rst_n));
+ctech_mux2x1 u_mac_rst_scan_sel (.A0 (cfg_glb_ctrl[2]), .A1 (scan_rst_n), .S  (scan_mode), .X  (mac_rst_n));
 
 // wb_host clock skew control
 clk_skew_adjust u_skew_wh
