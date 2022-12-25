@@ -3,12 +3,14 @@
 +incdir+$(USER_PROJECT_VERILOG)/dv/common/bfm
 +incdir+$(USER_PROJECT_VERILOG)/dv/common/model
 +incdir+$(USER_PROJECT_VERILOG)/dv/common/agents
++incdir+$(USER_PROJECT_VERILOG)/dv/common/agents/ethernet
 $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 
 #MBIST Wrapper
 +incdir+$(USER_PROJECT_VERILOG)/rtl/mbist/include/
 $(USER_PROJECT_VERILOG)/rtl/mbist_wrapper/src/mbist_wrapper.sv  
 $(USER_PROJECT_VERILOG)/rtl/mbist_wrapper/src/mbist_wb.sv  
+$(USER_PROJECT_VERILOG)/rtl/mbist_wrapper/src/mbist_reg.sv  
 
 ## MBIST CORE
 $(USER_PROJECT_VERILOG)/rtl/mbist/src/top/mbist_top.sv 
@@ -44,6 +46,7 @@ $(USER_PROJECT_VERILOG)/rtl/uart2wb/src/uart_msg_handler.v
 
 ## Pinmux reg
 $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux_top.sv
+$(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux.sv
 $(USER_PROJECT_VERILOG)/rtl/glbl/src/glbl_cfg.sv
 
 ### GMAC Block

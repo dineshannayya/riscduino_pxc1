@@ -36,24 +36,6 @@ module pinmux_top #(parameter SCW = 8   // SCAN CHAIN WIDTH
         output logic [31:0]     reg_rdata,
         output logic            reg_ack,
 
-	// BIST I/F
-	output logic            bist_en,
-	output logic            bist_run,
-	output logic            bist_load,
-
-    output logic [1:0]      bist_serial_sel,
-	output logic            bist_sdi,
-	output logic            bist_shift,
-	input  logic            bist_sdo,
-
-	input logic             bist_done,
-	input logic [3:0]       bist_error,
-	input logic [3:0]       bist_correct,
-	input logic [3:0]       bist_error_cnt0,
-	input logic [3:0]       bist_error_cnt1,
-	input logic [3:0]       bist_error_cnt2,
-	input logic [3:0]       bist_error_cnt3,
-
 
     //-----------------------------------------------------------------------
     // MAC-Tx Signal
@@ -79,7 +61,21 @@ module pinmux_top #(parameter SCW = 8   // SCAN CHAIN WIDTH
     output  logic	   mdio_clk        ,
     output  logic      mdio_in         ,
     input   logic      mdio_out_en     ,
-    input   logic      mdio_out        
+    input   logic      mdio_out        ,
+    //-------------------------------------
+    // Master UART TXD
+    //-------------------------------------
+    output  logic      uartm_rxd       ,
+    input   logic      uartm_txd       ,
+
+    //-------------------------------------
+    // External IO
+    //-------------------------------------
+    input  [37:0]      io_in           ,
+    output [37:0]      io_out          ,
+    output [37:0]      io_oeb
+
+    
 
 
 
@@ -93,6 +89,10 @@ module pinmux_top #(parameter SCW = 8   // SCAN CHAIN WIDTH
 
 assign scan_en_o = scan_en;
 assign scan_mode_o = scan_mode;
+
+
+
+
 
 
 // wb_host clock skew control
@@ -127,27 +127,57 @@ glbl_cfg u_glbl(
 
        // Outputs
           .reg_rdata          (reg_rdata            ),
-          .reg_ack            (reg_ack              ),
+          .reg_ack            (reg_ack              )
 
 
-       // BIST I/F
-          .bist_en            (bist_en              ),
-          .bist_run           (bist_run             ),
-          .bist_load          (bist_load            ),
-        
-          .bist_serial_sel    (bist_serial_sel      ),
-          .bist_sdi           (bist_sdi             ),
-          .bist_shift         (bist_shift           ),
-          .bist_sdo           (bist_sdo             ),
-        
-          .bist_done          (bist_done            ),
-          .bist_error         (bist_error           ),
-          .bist_correct       (bist_correct         ),
-          .bist_error_cnt0    (bist_error_cnt0      ),
-          .bist_error_cnt1    (bist_error_cnt1      ),
-          .bist_error_cnt2    (bist_error_cnt2      ),
-          .bist_error_cnt3    (bist_error_cnt3      )
     );
+
+
+pinmux u_pinmux(
+
+    //-----------------------------------------------------------------------
+    // MAC-Tx Signal
+    //-----------------------------------------------------------------------
+    .mac_tx_clk              (mac_tx_clk  ),
+    .mac_tx_en               (mac_tx_en   ),
+    .mac_tx_er               (mac_tx_er   ),
+    .mac_txd                 (mac_txd     ),
+                   
+    //-----------------------------------------------------------------------
+    // MAC-Rx Signal
+    //-----------------------------------------------------------------------
+    .mac_rx_clk              (mac_rx_clk  ),
+    .mac_rx_er               (mac_rx_er   ),
+    .mac_rx_dv               (mac_rx_dv   ),
+    .mac_rxd                 (mac_rxd     ),
+    .mac_crs                 (mac_crs     ),
+                   
+                   
+    //-----------------------------------------------------------------------
+    // MDIO Signal
+    //-----------------------------------------------------------------------
+    .mdio_clk               (mdio_clk     ),
+    .mdio_in                (mdio_in      ),
+    .mdio_out_en            (mdio_out_en  ),
+    .mdio_out               (mdio_out     ),
+
+    //-------------------------------------
+    // Master UART TXD
+    //-------------------------------------
+    .uartm_rxd              (uartm_rxd   ),
+    .uartm_txd              (uartm_txd   ),
+
+    //-------------------------------------
+    // External IO
+    //-------------------------------------
+    .io_in                  (io_in      ),
+    .io_out                 (io_out     ),
+    .io_oeb                 (io_oeb     )
+
+
+
+
+);
 
 
 

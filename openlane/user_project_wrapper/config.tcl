@@ -66,28 +66,28 @@ set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(VERILOG_FILES_BLACKBOX) "\
 	    $::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v \
 	    $::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v \
-	$::env(DESIGN_DIR)/../../verilog/gl/wb_interconnect.v \
-	$::env(DESIGN_DIR)/../../verilog/gl/wb_host.v \
-	$::env(DESIGN_DIR)/../../verilog/gl/glbl_cfg.v\
-	$::env(DESIGN_DIR)/../../verilog/gl/mbist_top1.v\
-	$::env(DESIGN_DIR)/../../verilog/gl/mbist_top2.v\
+	    $::env(DESIGN_DIR)/../../verilog/gl/wb_interconnect.v \
+	    $::env(DESIGN_DIR)/../../verilog/gl/wb_host.v \
+	    $::env(DESIGN_DIR)/../../verilog/gl/pinmux_top.v\
+	    $::env(DESIGN_DIR)/../../verilog/gl/mbist_wrapper.v\
+	    $::env(DESIGN_DIR)/../../verilog/gl/mac_wrapper.v\
 	"
 
 set ::env(EXTRA_LEFS) "\
 	$::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/lef/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
 	$::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_32x256_8.lef \
-	$::env(DESIGN_DIR)/../../lef/glbl_cfg.lef \
-	$::env(DESIGN_DIR)/../../lef/mbist_top1.lef \
-	$::env(DESIGN_DIR)/../../lef/mbist_top2.lef \
+	$::env(DESIGN_DIR)/../../lef/pinmux_top.lef \
+	$::env(DESIGN_DIR)/../../lef/mbist_wrapper.lef \
+	$::env(DESIGN_DIR)/../../lef/mac_wrapper.lef \
 	$::env(DESIGN_DIR)/../../lef/wb_interconnect.lef \
 	$::env(DESIGN_DIR)/../../lef/wb_host.lef"
 
 set ::env(EXTRA_GDS_FILES) "\
 	$::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
 	$::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_32x256_8.gds \
-	$::env(DESIGN_DIR)/../../gds/glbl_cfg.gds \
-	$::env(DESIGN_DIR)/../../gds/mbist_top1.gds \
-	$::env(DESIGN_DIR)/../../gds/mbist_top2.gds \
+	$::env(DESIGN_DIR)/../../gds/pinmux_top.gds \
+	$::env(DESIGN_DIR)/../../gds/mbist_wrapper.gds \
+	$::env(DESIGN_DIR)/../../gds/mac_wrapper.gds \
 	$::env(DESIGN_DIR)/../../gds/wb_interconnect.gds \
 	$::env(DESIGN_DIR)/../../gds/wb_host.gds"
 
@@ -100,6 +100,7 @@ set ::env(RT_MAX_LAYER) {met5}
 
 ## Internal Macros
 ### Macro PDN Connections
+## Temp Masked to 0
 set ::env(FP_PDN_CHECK_NODES) 1
 set ::env(FP_PDN_IRDROP) "1"
 set ::env(RUN_IRDROP_REPORT) "1"
@@ -110,6 +111,16 @@ set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "0"
 set ::env(FP_PDN_CHECK_NODES) 1
 set ::env(FP_PDN_ENABLE_RAILS) 0
 set ::env(FP_PDN_IRDROP) "1"
+set ::env(FP_PDN_HORIZONTAL_HALO) "10"
+set ::env(FP_PDN_VERTICAL_HALO) "10"
+set ::env(FP_PDN_VOFFSET) "5"
+set ::env(FP_PDN_VPITCH) "80"
+set ::env(FP_PDN_HOFFSET) "5"
+set ::env(FP_PDN_HPITCH) "80"
+set ::env(FP_PDN_HWIDTH) {5.2}
+set ::env(FP_PDN_VWIDTH) {5.2}
+set ::env(FP_PDN_HSPACING) {13.8}
+set ::env(FP_PDN_VSPACING) {13.8}
 
 set ::env(VDD_NETS) {vccd1 vccd2 vdda1 vdda2}
 set ::env(GND_NETS) {vssd1 vssd2 vssa1 vssa2}
@@ -124,53 +135,48 @@ set ::env(DRT_OPT_ITERS) {32}
 
 # Add Blockage arond the SRAM to avoid Magic DRC & 
 # add signal routing blockage for met5
-set ::env(GLB_RT_OBS) "met1 2000.00 800.00  2683.10 1216.54, \
-	                   met2 2000.00 800.00  2683.10 1216.54, \
-		           met3 2000.00 800.00  2683.10 1216.54, \
-	               met1 2000.00 1400.00 2683.10 1816.54, \
-	               met2 2000.00 1400.00 2683.10 1816.54, \
-	               met3 2000.00 1400.00 2683.10 1816.54, \
-	               met1 2000.00 2000.00 2683.10 2416.54, \
-	               met2 2000.00 2000.00 2683.10 2416.54, \
-	               met3 2000.00 2000.00 2683.10 2416.54, \
-	               met1 2000.00 2600.00 2683.10 3016.54, \
-	               met2 2000.00 2600.00 2683.10 3016.54, \
-	               met3 2000.00 2600.00 2683.10 3016.54, \
-	               met1 200.00 1200.00 679.78 1597.5, \
-	               met2 200.00 1200.00 679.78 1597.5, \
-	               met3 200.00 1200.00 679.78 1597.5, \
-	               met1 200.00 1800.00 679.78 2197.5, \
-	               met2 200.00 1800.00 679.78 2197.5, \
-	               met3 200.00 1800.00 679.78 2197.5, \
-	               met1 200.00 2400.00 679.78 2797.5, \
-	               met2 200.00 2400.00 679.78 2797.5, \
-	               met3 200.00 2400.00 679.78 2797.5, \
-	               met1 200.00 3000.00 679.78 3397.5, \
-	               met2 200.00 3000.00 679.78 3397.5, \
-	               met3 200.00 3000.00 679.78 3397.5, \
-		       met5 0 0 2920 3520"
-
+#set ::env(GLB_RT_OBS) "met1 2000.00 800.00  2683.10 1216.54, \
+#	                   met2 2000.00 800.00  2683.10 1216.54, \
+#		               met3 2000.00 800.00  2683.10 1216.54, \
+#	                   met1 2000.00 1400.00 2683.10 1816.54, \
+#	                   met2 2000.00 1400.00 2683.10 1816.54, \
+#	                   met3 2000.00 1400.00 2683.10 1816.54, \
+#	                   met1 2000.00 2000.00 2683.10 2416.54, \
+#	                   met2 2000.00 2000.00 2683.10 2416.54, \
+#	                   met3 2000.00 2000.00 2683.10 2416.54, \
+#	                   met1 2000.00 2600.00 2683.10 3016.54, \
+#	                   met2 2000.00 2600.00 2683.10 3016.54, \
+#	                   met3 2000.00 2600.00 2683.10 3016.54, \
+#	                   met1 200.00 1200.00 679.78 1597.5, \
+#	                   met2 200.00 1200.00 679.78 1597.5, \
+#	                   met3 200.00 1200.00 679.78 1597.5, \
+#	                   met1 200.00 1800.00 679.78 2197.5, \
+#	                   met2 200.00 1800.00 679.78 2197.5, \
+#	                   met3 200.00 1800.00 679.78 2197.5, \
+#	                   met1 200.00 2400.00 679.78 2797.5, \
+#	                   met2 200.00 2400.00 679.78 2797.5, \
+#	                   met3 200.00 2400.00 679.78 2797.5, \
+#	                   met1 200.00 3000.00 679.78 3397.5, \
+#	                   met2 200.00 3000.00 679.78 3397.5, \
+#	                   met3 200.00 3000.00 679.78 3397.5, \
+#		               met5 0 0 2920 3520"
+#
 
 set ::env(FP_PDN_MACRO_HOOKS) "\
-     u_wb_host	 vccd1 vssd1 vccd1 vssd1,\
-     u_intercon vccd1 vssd1 vccd1 vssd1,\
-     u_glbl	 vccd1 vssd1 vccd1 vssd1,\
-     u_mbist1   vccd1 vssd1 vccd1 vssd1,\
-     u_mbist2   vccd1 vssd1 vccd1 vssd1,\
-     u_mbist3   vccd1 vssd1 vccd1 vssd1,\
-     u_mbist4   vccd1 vssd1 vccd1 vssd1,\
-     u_mbist5   vccd1 vssd1 vccd1 vssd1,\
-     u_mbist6   vccd1 vssd1 vccd1 vssd1,\
-     u_mbist7   vccd1 vssd1 vccd1 vssd1,\
-     u_mbist8   vccd1 vssd1 vccd1 vssd1,\
-     u_sram1_2kb vccd1 vssd1 vccd1 vssd1,\
-     u_sram2_2kb vccd1 vssd1 vccd1 vssd1,\
-     u_sram3_2kb vccd1 vssd1 vccd1 vssd1,\
-     u_sram4_2kb vccd1 vssd1 vccd1 vssd1,\
-     u_sram5_1kb vccd1 vssd1 vccd1 vssd1,\
-     u_sram6_1kb vccd1 vssd1 vccd1 vssd1,\
-     u_sram7_1kb vccd1 vssd1 vccd1 vssd1,\
-     u_sram8_1kb vccd1 vssd1 vccd1 vssd1\
+     u_wb_host	       vccd1 vssd1 vccd1 vssd1,\
+     u_intercon        vccd1 vssd1 vccd1 vssd1,\
+     u_pinmux	       vccd1 vssd1 vccd1 vssd1,\
+     u_mac_wrap        vccd1 vssd1 vccd1 vssd1,\
+     u_mbist0          vccd1 vssd1 vccd1 vssd1,\
+     u_mbist1          vccd1 vssd1 vccd1 vssd1,\
+     u_sram0_2kb       vccd1 vssd1 vccd1 vssd1,\
+     u_sram1_2kb       vccd1 vssd1 vccd1 vssd1,\
+     u_sram2_2kb       vccd1 vssd1 vccd1 vssd1,\
+     u_sram3_2kb       vccd1 vssd1 vccd1 vssd1,\
+     u_sram4_2kb       vccd1 vssd1 vccd1 vssd1,\
+     u_sram5_2kb       vccd1 vssd1 vccd1 vssd1,\
+     u_sram6_2kb       vccd1 vssd1 vccd1 vssd1,\
+     u_sram7_2kb       vccd1 vssd1 vccd1 vssd1\
      "
 
 

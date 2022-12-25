@@ -68,7 +68,6 @@ module wb_rd_mem2mem (
               desc_q_empty        ,
 
     // Master Interface Signal
-              mem_taddr           ,
               mem_full            ,
               mem_afull           ,
               mem_wr              , 
@@ -76,7 +75,6 @@ module wb_rd_mem2mem (
  
     // Slave Interface Signal
               wbo_dout            , 
-              wbo_taddr           , 
               wbo_addr            , 
               wbo_be              , 
               wbo_we              , 
@@ -91,7 +89,6 @@ module wb_rd_mem2mem (
 parameter D_WD    = 16; // Data Width
 parameter BE_WD   = 2;  // Byte Enable
 parameter ADR_WD  = 28; // Address Width
-parameter TAR_WD  = 4;  // Target Width
 
 //---------------------
 // State Machine Parameter
@@ -123,14 +120,13 @@ input               rst_n       ;  // RST_I The reset input [RST_I] forces the W
 //---------------------------------
 // Descriptor Interface
 //---------------------------------
-input [15:6]   cfg_desc_baddr    ;  // descriptor Base Address
+input [9:0]    cfg_desc_baddr    ;  // descriptor Base Address
 input          desc_q_empty      ; 
 
 //------------------------------------------
 // Stanard Memory Interface
 //------------------------------------------
 
-input [TAR_WD-1:0]  mem_taddr   ; // target address 
 input               mem_full    ; // memory full
 input               mem_afull   ; // memory afull 
 output              mem_wr      ; // memory Write
@@ -152,7 +148,6 @@ input               wbo_ack  ; // The acknowledge input [ACK_I], when asserted,
                                // indicates the termination of a normal bus cycle. 
                                // Also see the [ERR_I] and [RTY_I] signal descriptions. 
 
-output [TAR_WD-1:0] wbo_taddr;
 output [ADR_WD-1:0] wbo_addr ; // The address output array [ADR_O(63..0)] is used 
                                // to pass a binary address, with the most significant 
                                // address bit at the higher numbered end of the signal array. 
@@ -206,7 +201,6 @@ input             wbo_rty; // RTY_I The retry input [RTY_I] indicates that the i
 
 reg  [2:0]          state       ;
 reg  [15:0]         cnt         ;
-reg  [TAR_WD-1:0]   wbo_taddr   ;
 reg  [ADR_WD-1:0]   wbo_addr    ;
 reg                 wbo_stb     ;
 reg                 wbo_we      ;
@@ -225,7 +219,6 @@ reg         mem_wr;
 always @(negedge rst_n or posedge clk) begin
    if(rst_n == 0) begin
       state       <= IDLE;
-      wbo_taddr   <= 0;
       wbo_addr    <= 0;
       wbo_stb     <= 0;
       wbo_we      <= 0;
@@ -243,8 +236,7 @@ always @(negedge rst_n or posedge clk) begin
             mem_wr      <= 0;
             // Check for Descriptor Q not empty
             if(!desc_q_empty) begin
-               wbo_taddr   <= mem_taddr;
-               wbo_addr  <= {cfg_desc_baddr[15:6],desc_ptr[3:0]};
+               wbo_addr  <= {cfg_desc_baddr[9:0],desc_ptr[3:0],2'b0};
                wbo_be    <= 4'hF;
                wbo_we    <= 1'b0;
                wbo_stb   <= 1'b1;
@@ -270,8 +262,7 @@ always @(negedge rst_n or posedge clk) begin
             // check for internal memory not full and initiate
             // the transfer
             if(!(mem_full || mem_afull)) begin 
-                wbo_taddr   <= mem_taddr;
-                wbo_addr    <= mem_addr[14:2];
+                wbo_addr    <= mem_addr;
                 wbo_stb     <= 1'b1;
                 wbo_we      <= 1'b0;
                 wbo_be      <= 4'hF;

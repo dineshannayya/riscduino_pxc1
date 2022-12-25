@@ -325,17 +325,17 @@ g_mac_core u_mac_core  (
                     .app_reset_n             (app_reset_n) ,
 
                  // Reg Bus Interface Signal
-                    . reg_cs                 (reg_cs),
-                    . reg_wr                 (reg_wr),
-                    . reg_addr               (reg_addr),
-                    . reg_wdata              (reg_wdata),
-                    . reg_be                 (reg_be),
+                    .reg_cs                  (reg_cs     ),
+                    .reg_wr                  (reg_wr     ),
+                    .reg_addr                (reg_addr   ),
+                    .reg_wdata               (reg_wdata  ),
+                    .reg_be                  (reg_be     ),
 
                      // Outputs
-                     . reg_rdata             (reg_rdata),
-                     . reg_ack               (reg_ack),
+                    .reg_rdata               (reg_rdata  ),
+                    .reg_ack                 (reg_ack    ),
 
-                    .app_clk                 (app_clk) ,
+                    .app_clk                 (app_clk    ),
 
                     // Conntrol Bus Sync with Application Clock
 
@@ -401,7 +401,7 @@ g_mac_core u_mac_core  (
 
 assign tx_fifo_rdy = (tx_fifo_aval > 8) ; // Dinesh-A Change it to config
 
-async_fifo #(W,DP,0,0) u_mac_txfifo  (
+async_fifo #(.W(W),.DP(DP),.WR_FAST(1),.RD_FAST(1)) u_mac_txfifo  (
                    .wr_clk                   (app_clk),
                    .wr_reset_n               (app_reset_n),
                    .wr_en                    (app_txfifo_wren_i),
@@ -419,7 +419,7 @@ async_fifo #(W,DP,0,0) u_mac_txfifo  (
                    .rd_data                  (tx_fifo_data)
                    );
 
-async_fifo #(W,DP,0,0) u_mac_rxfifo (                  
+async_fifo #(.W(W),.DP(DP),.WR_FAST(1),.RD_FAST(1)) u_mac_rxfifo (                  
                    .wr_clk                   (phy_rx_clk),
                    .wr_reset_n               (rx_reset_n),
                    .wr_en                    (rx_fifo_wr_o),

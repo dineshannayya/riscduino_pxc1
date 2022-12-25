@@ -63,15 +63,10 @@ module mbist_top
     inout vssd1,	// User area 1 digital ground
 `endif
 
-    // Clock Skew Adjust
-       input  wire                           wbd_clk_int, 
-       output wire                           wbd_clk_skew,
-       input  wire [3:0]                     cfg_cska_mbist, // clock skew adjust for web host
-
 	input logic                            rst_n,
 
 	// MBIST I/F
-	input wire                           bist_en,
+	input wire                            bist_en,
 	input wire                            bist_run,
 	input wire                            bist_shift,
 	input wire                            bist_load,
@@ -151,7 +146,6 @@ wire  [BIST_DATA_WD-1:0]func_din[0:BIST_NO_SRAM-1];
 // Local variable defination
 // ---------------------------------------------------
 //
-wire                    srst_n     ; // sync reset w.r.t bist_clk
 wire                    cmd_phase  ;  // Command Phase
 wire                    cmp_phase  ;  // Compare Phase
 wire                    run_op     ;  // Run next Operation
@@ -268,26 +262,6 @@ wire wb_clk_b1,wb_clk_b2;
 //ctech_clk_buf u_cts_wb_clk_b1 (.A (wb_clk_i), . X(wb_clk_b1));
 //ctech_clk_buf u_cts_wb_clk_b2 (.A (wb_clk_i), . X(wb_clk_b2));
 
-// wb_host clock skew control
-clk_skew_adjust u_skew_mbist
-       (
-`ifdef USE_POWER_PINS
-               .vccd1      (vccd1                      ),// User area 1 1.8V supply
-               .vssd1      (vssd1                      ),// User area 1 digital ground
-`endif
-	       .clk_in     (wbd_clk_int                ), 
-	       .sel        (cfg_cska_mbist             ), 
-	       .clk_out    (wbd_clk_skew               ) 
-       );
-
-reset_sync   u_reset_sync (
-	      .scan_mode  (1'b0 ),
-              .dclk       (wb_clk_i  ), // Destination clock domain
-	      .arst_n     (rst_n     ), // active low async reset
-              .srst_n     (srst_n    )
-          );
-
-
 integer i;
 reg bist_error_and;
 reg bist_error_correct_or;
@@ -316,22 +290,22 @@ mbist_fsm
           )
      u_fsm (
 
-	            .cmd_phase          (cmd_phase           ),
-	            .cmp_phase          (cmp_phase           ),
-	            .run_op             (run_op             ),
-	            .run_addr           (run_addr           ),
-	            .run_sti            (run_sti            ),
-	            .run_pat            (run_pat            ),
-	            .bist_done          (bist_done          ),
+	        .cmd_phase          (cmd_phase           ),
+	        .cmp_phase          (cmp_phase           ),
+	        .run_op             (run_op             ),
+	        .run_addr           (run_addr           ),
+	        .run_sti            (run_sti            ),
+	        .run_pat            (run_pat            ),
+	        .bist_done          (bist_done          ),
 
 
-	            .clk                (wb_clk_i           ),
-	            .rst_n              (srst_n             ),
-	            .bist_run           (bist_run           ),
-	            .last_op            (last_op            ),
-	            .last_addr          (last_addr          ),
-	            .last_sti           (last_sti           ),
-	            .last_pat           (last_pat           ),
+	        .clk                (wb_clk_i           ),
+	        .rst_n              (rst_n             ),
+	        .bist_run           (bist_run           ),
+	        .last_op            (last_op            ),
+	        .last_addr          (last_addr          ),
+	        .last_sti           (last_sti           ),
+	        .last_pat           (last_pat           ),
 		    .op_reverse         (op_reverse         ),
 		    .bist_error         (bist_error_and     )
 );
@@ -354,7 +328,7 @@ mbist_addr_gen
                     .sdo                (bist_addr_sdo      ),         
 
                     .clk                (wb_clk_i           ),         
-                    .rst_n              (srst_n             ),       
+                    .rst_n              (rst_n             ),       
                     .run                (run_addr           ),         
                     .updown             (op_updown          ),      
                     .scan_shift         (bist_shift         ),  
@@ -382,7 +356,7 @@ mbist_sti_sel
                 .stimulus           (stimulus           ),
 
 	            .clk                (wb_clk_i           ),  
-	            .rst_n              (srst_n             ),  
+	            .rst_n              (rst_n             ),  
 	            .scan_shift         (bist_shift         ),  
 	            .sdi                (bist_addr_sdo      ),  
 	            .run                (run_sti            )              
@@ -413,7 +387,7 @@ mbist_op_sel
 	            .last_op            (last_op               ),
 
 	            .clk                (wb_clk_i              ),
-	            .rst_n              (srst_n                ),
+	            .rst_n              (rst_n                ),
 	            .scan_shift         (bist_shift            ),
 	            .sdi                (bist_sti_sdo          ),
 		        .re_init            (bist_error_correct_or ),
@@ -439,7 +413,7 @@ mbist_pat_sel
                     .pat_data           (pat_data           ),
                     .sdo                (bist_pat_sdo       ),
                     .clk                (wb_clk_i           ),
-                    .rst_n              (srst_n             ),
+                    .rst_n              (rst_n             ),
                     .run                (run_pat            ),
                     .scan_shift         (bist_shift         ),
                     .sdi                (bist_op_sdo        )
@@ -468,18 +442,18 @@ mbist_data_cmp
 
 
      u_cmp (
-                    .error              (bist_error[sram_no]         ),
+            .error              (bist_error[sram_no]         ),
 		    .error_correct      (bist_error_correct[sram_no] ),
 		    .correct            (                            ), // same signal available at bist mux
 		    .error_addr         (bist_error_addr[sram_no]    ),
 		    .error_cnt          (bist_error_cnt_i[sram_no]   ),
-                    .clk                (wb_clk_i                    ),
-                    .rst_n              (srst_n                      ),
+            .clk                (wb_clk_i                    ),
+            .rst_n              (rst_n                      ),
 		    .addr_inc_phase     (run_addr                    ),
-                    .compare            (compare                     ), 
-	            .read_invert        (op_invert                   ),
-                    .comp_data          (pat_data                    ),
-                    .rxd_data           (func_dout[sram_no]          ),
+            .compare            (compare                     ), 
+	        .read_invert        (op_invert                   ),
+            .comp_data          (pat_data                    ),
+            .rxd_data           (func_dout[sram_no]          ),
 		    .addr               (bist_addr                   )
 	     
 	);
@@ -490,11 +464,11 @@ mbist_data_cmp
     	 .BIST_ADDR_WD           (BIST_ADDR_WD           ),
     	 .BIST_DATA_WD           (BIST_DATA_WD           )
               ) u_mem_wrapper_(
-    	                .rst_n           (srst_n                    ),
+    	                .rst_n           (rst_n                    ),
                    // WB I/F
-		        .sram_id         (NO_SRAM_WD'(sram_no)      ),
+		                .sram_id         (NO_SRAM_WD'(sram_no)      ),
                         .wb_clk_i        (wb_clk2_i                 ),  // System clock
-			.mem_cs          (mem_cs                    ),  // Chip Select
+			            .mem_cs          (mem_cs                    ),  // Chip Select
                         .mem_req         (mem_req                   ),  // strobe/request
                         .mem_addr        (mem_addr                  ),  // address
                         .mem_we          (mem_we                    ),  // write
@@ -526,7 +500,7 @@ mbist_mux
 
 	        .scan_mode            (1'b0                       ),
 
-            .rst_n                (srst_n                     ),
+            .rst_n                (rst_n                     ),
             // MBIST CTRL SIGNAL
             .bist_en              (bist_en                    ),
             .bist_addr            (bist_addr                  ),

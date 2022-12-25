@@ -77,36 +77,18 @@ module mbist_wrapper
 
 	input logic                           rst_n                ,
 
-	// MBIST I/F
-	input wire                            bist_en              ,
-	input wire                            bist_run             ,
-	input wire                            bist_shift           ,
-	input wire                            bist_load            ,
-	input wire                            bist_sdi             ,
-	input wire   [1:0]                    bist_serial_sel      ,
-
-	output wire [3:0]                     bist_error_cnt0      ,
-	output wire [3:0]                     bist_error_cnt1      ,
-	output wire [3:0]                     bist_error_cnt2      ,
-	output wire [3:0]                     bist_error_cnt3      ,
-	output wire [BIST_NO_SRAM-1:0]        bist_correct         ,
-	output wire [BIST_NO_SRAM-1:0]        bist_error           ,
-	output wire                           bist_done            ,
-	output wire                           bist_sdo             ,
-
-
    // WB I/F
    input   wire                           wb_clk_i          ,  // System clock
    input   wire                           wb_clk2_i         , // System clock2 is no cts
+   input   wire                           wb_cyc_i          ,  // strobe/request
    input   wire                           wb_stb_i          ,  // strobe/request
-   input   wire [(BIST_NO_SRAM+1)/2-1:0]  wb_cs_i           ,
-   input   wire [BIST_ADDR_WD-1:0]        wb_adr_i          ,  // address
+   input   wire [14:0]                    wb_adr_i          ,  // address
    input   wire                           wb_we_i           ,  // write
-   input   wire [BIST_DATA_WD-1:0]        wb_dat_i          ,  // data output
-   input   wire [BIST_DATA_WD/8-1:0]      wb_sel_i          ,  // byte enable
+   input   wire [31:0]                    wb_dat_i          ,  // data output
+   input   wire [3:0]                     wb_sel_i          ,  // byte enable
    input   wire [9:0]                     wb_bl_i           ,   // burst 
    input   wire                           wb_bry_i          ,  // burst ready
-   output  wire [BIST_DATA_WD-1:0]        wb_dat_o          ,  // data input
+   output  wire [31:0]                    wb_dat_o          ,  // data input
    output  wire                           wb_ack_o          ,  // acknowlegement
    output  wire                           wb_lack_o         , // acknowlegement
    output  wire                           wb_err_o          ,  // error
@@ -150,6 +132,10 @@ module mbist_wrapper
 
 parameter  NO_SRAM_WD = (BIST_NO_SRAM+1)/2;
 
+
+//--------------------------------------
+// MEM I/F
+//---------------------------------------
 logic                          mem_req;  // strobe/request
 logic [(BIST_NO_SRAM+1)/2-1:0] mem_cs;
 logic [BIST_ADDR_WD-1:0]       mem_addr;  // address
@@ -158,11 +144,60 @@ logic [BIST_DATA_WD-1:0]       mem_wdata;  // data output
 logic [BIST_DATA_WD/8-1:0]     mem_wmask;  // byte enable
 logic [BIST_DATA_WD-1:0]       mem_rdata;  // data input
 
+//------------------------------------
+// Reg Bus Interface Signal
+//------------------------------------
+logic                          reg_cs;
+logic                          reg_wr;
+logic [3:0]                    reg_addr;
+logic [31:0]                   reg_wdata;
+logic [3:0]                    reg_be;
+
+// Outputs
+logic [31:0]                   reg_rdata;
+logic                          reg_ack;
+
+//---------------------------------------
+// MBIST I/F
+//---------------------------------------
+logic                           bist_en              ;
+logic                           bist_run             ;
+logic                           bist_shift           ;
+logic                           bist_load            ;
+logic                           bist_sdi             ;
+logic   [1:0]                   bist_serial_sel      ;
+
+logic [3:0]                     bist_error_cnt0      ;
+logic [3:0]                     bist_error_cnt1      ;
+logic [3:0]                     bist_error_cnt2      ;
+logic [3:0]                     bist_error_cnt3      ;
+logic [BIST_NO_SRAM-1:0]        bist_correct         ;
+logic [BIST_NO_SRAM-1:0]        bist_error           ;
+logic                           bist_done            ;
+logic                           bist_sdo             ;
 
 //Scan FEED Throug
 assign scan_en_o = scan_en;
 assign scan_mode_o = scan_mode;
 
+// wb_host clock skew control
+clk_skew_adjust u_skew_mbist
+       (
+`ifdef USE_POWER_PINS
+               .vccd1      (vccd1                      ),// User area 1 1.8V supply
+               .vssd1      (vssd1                      ),// User area 1 digital ground
+`endif
+	       .clk_in     (wbd_clk_int                ), 
+	       .sel        (cfg_cska_mbist             ), 
+	       .clk_out    (wbd_clk_skew               ) 
+       );
+
+reset_sync   u_reset_sync (
+	      .scan_mode  (1'b0 ),
+          .dclk       (wb_clk_i  ), // Destination clock domain
+	      .arst_n     (rst_n     ), // active low async reset
+          .srst_n     (srst_n    )
+          );
 
 mbist_wb  #(
 	.BIST_NO_SRAM           (4                      ),
@@ -176,11 +211,10 @@ mbist_wb  #(
           .vssd1                        (vssd1              ),// User area 1 digital ground
 `endif
 
-          .rst_n                        (rst_n              ),
+          .rst_n                        (srst_n              ),
           // WB I/F
           .wb_clk_i                     (wb_clk_i           ),  
           .wb_stb_i                     (wb_stb_i           ),  
-          .wb_cs_i                      (wb_cs_i            ),
           .wb_adr_i                     (wb_adr_i           ),
           .wb_we_i                      (wb_we_i            ),  
           .wb_dat_i                     (wb_dat_i           ),  
@@ -191,6 +225,18 @@ mbist_wb  #(
           .wb_ack_o                     (wb_ack_o           ),  
           .wb_lack_o                    (wb_lack_o          ),  
           .wb_err_o                     (                   ), 
+
+        // Reg Bus Interface Signal
+          .reg_cs                       (reg_cs             ),
+          .reg_wr                       (reg_wr             ),
+          .reg_addr                     (reg_addr           ),
+          .reg_wdata                    (reg_wdata          ),
+          .reg_be                       (reg_be             ),
+
+          .reg_rdata                    (reg_rdata          ),
+          .reg_ack                      (reg_ack            ),
+
+        // MEM I/F
 	      .mem_req                      (mem_req            ),
           .mem_cs                       (mem_cs             ),
           .mem_addr                     (mem_addr           ),
@@ -201,6 +247,50 @@ mbist_wb  #(
           
 );
 
+//------------------------------------------
+// MBIST Register
+//-------------------------------------------
+
+mbist_reg u_reg(
+
+          .mclk              (wb_clk_i       ),
+          .reset_n           (srst_n         ),
+
+        // Reg Bus Interface Signal
+          .reg_cs            (reg_cs         ),
+          .reg_wr            (reg_wr         ),
+          .reg_addr          (reg_addr       ),
+          .reg_wdata         (reg_wdata      ),
+          .reg_be            (reg_be         ),
+
+       // Outputs
+          .reg_rdata         (reg_rdata      ),
+          .reg_ack           (reg_ack        ),
+
+	    // BIST I/F
+	      .bist_en           (bist_en        ),
+	      .bist_run          (bist_run       ),
+	      .bist_load         (bist_load      ),
+
+          .bist_serial_sel   (bist_serial_sel),
+	      .bist_sdi          (bist_sdi       ),
+	      .bist_shift        (bist_shift     ),
+	      .bist_sdo          (bist_sdo       ),
+
+	      .bist_done         (bist_done      ),
+	      .bist_error        (bist_error     ),
+	      .bist_correct      (bist_correct   ),
+	      .bist_error_cnt0   (bist_error_cnt0),
+	      .bist_error_cnt1   (bist_error_cnt1),
+	      .bist_error_cnt2   (bist_error_cnt2),
+	      .bist_error_cnt3   (bist_error_cnt3)
+
+        );
+
+
+//------------------------------------------
+// MBIST CONTROLLER
+//------------------------------------------
 
 mbist_top  # (
 	`ifndef SYNTHESIS
@@ -220,11 +310,7 @@ mbist_top  # (
           .vccd1                        (vccd1              ),// User area 1 1.8V supply
           .vssd1                        (vssd1              ),// User area 1 digital ground
 `endif
-          // Clock Skew adjust
-          .wbd_clk_int                  (wbd_clk_int        ), 
-          .cfg_cska_mbist               (cfg_cska_mbist     ), 
-          .wbd_clk_skew                 (wbd_clk_skew       ),
-	         // WB I/F
+	     // WB I/F
           .wb_clk2_i                    (wb_clk2_i          ),  
           .wb_clk_i                     (wb_clk_i           ),  
           .mem_req                      (mem_req            ),  
@@ -234,7 +320,7 @@ mbist_top  # (
           .mem_wdata                    (mem_wdata          ),  
           .mem_wmask                    (mem_wmask          ),  
           .mem_rdata                    (mem_rdata          ),  
-	      .rst_n                        (rst_n              ),
+	      .rst_n                        (srst_n             ),
 
           .bist_serial_sel              (bist_serial_sel    ), 
 	      .bist_en                      (bist_en            ),

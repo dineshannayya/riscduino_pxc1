@@ -19,7 +19,7 @@
 .SUFFIXES:
 .SILENT: clean all
 
-PATTERNS = user_mbist_test1
+PATTERNS = user_mac_test1 user_mbist_test1 user_mbist_test2
 
 all:  ${PATTERNS}
 	echo "################# RTL Test case Summary #####################" > regression.rpt
@@ -27,11 +27,11 @@ all:  ${PATTERNS}
 	for i in ${PATTERNS}; do \
 		( cd $$i && make | tee run.rtl.log && grep Monitor run.rtl.log | grep $$i >> ../regression.rpt) ; \
 	done
-	echo "################# GL Test case Summary #####################" >> regression.rpt
-	\rm -rf */*.vvp
-	for i in ${PATTERNS}; do \
-		( cd $$i && make SIM=GL | tee run.gl.log && grep Monitor run.gl.log | grep $$i >> ../regression.rpt) ; \
-	done
+	#echo "################# GL Test case Summary #####################" >> regression.rpt
+	#\rm -rf */*.vvp
+	#for i in ${PATTERNS}; do \
+	#	( cd $$i && make SIM=GL | tee run.gl.log && grep Monitor run.gl.log | grep $$i >> ../regression.rpt) ; \
+	#done
 	echo "################# End of Test case Summary #####################" >> regression.rpt
 
 DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))

@@ -26,12 +26,13 @@ set ::env(DESIGN_IS_CORE) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "wbm_clk_i wbs_clk_i lbist_clk_int u_uart2wb.u_core.u_uart_clk.u_mux/X"
+set ::env(CLOCK_PORT) "wbm_clk_i wbs_clk_i lbist_clk_int u_uart2wb.u_core.u_uart_clk.genblk1.u_mux/X"
 
 set ::env(SYNTH_MAX_FANOUT) 4
 set ::env(SYNTH_BUFFERING) {0}
 
 ## CTS BUFFER
+set ::env(CTS_CLK_MAX_WIRE_LENGTH) {250}
 set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8"
 set ::env(CTS_SINK_CLUSTERING_SIZE) "16"
 set ::env(CLOCK_BUFFER_FANOUT) "8"
@@ -41,7 +42,7 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-     $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_skew_adjust.gv \
      $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wb_host.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_fifo.sv      \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_wb.sv        \

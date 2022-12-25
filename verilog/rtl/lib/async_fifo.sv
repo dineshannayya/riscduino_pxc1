@@ -62,6 +62,8 @@ later version.
 //           wr_total_free_space -->  Indicate total free transfer available 
 //        2. At read clock domain:
 //           rd_total_aval       -->  Indicate total no of transfer available
+//
+// Warning:  Make sure that RD_FAST = 1'b1; if the design support back to back read
 //-----------------------------------------------
 //`timescale  1ns/1ps
 
@@ -83,7 +85,7 @@ module async_fifo (wr_clk,
    parameter W = 4'd8;
    parameter DP = 3'd4;
    parameter WR_FAST = 1'b1;
-   parameter RD_FAST = 1'b1;
+   parameter RD_FAST = 1'b1; // Dinesh-A: For Back to back Read case 
    parameter FULL_DP = DP;
    parameter EMPTY_DP = 1'b0;
 

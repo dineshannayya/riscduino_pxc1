@@ -83,25 +83,8 @@ module glbl_cfg (
 
        // Outputs
         output logic [31:0]     reg_rdata,
-        output logic            reg_ack,
+        output logic            reg_ack
 
-	    // BIST I/F
-	    output logic            bist_en,
-	    output logic            bist_run,
-	    output logic            bist_load,
-
-        output logic [1:0]      bist_serial_sel,
-	    output logic            bist_sdi,
-	    output logic            bist_shift,
-	    input  logic            bist_sdo,
-
-	    input logic             bist_done,
-	    input logic [3:0]       bist_error,
-	    input logic [3:0]       bist_correct,
-	    input logic [3:0]       bist_error_cnt0,
-	    input logic [3:0]       bist_error_cnt1,
-	    input logic [3:0]       bist_error_cnt2,
-	    input logic [3:0]       bist_error_cnt3
 
         );
 
@@ -121,11 +104,6 @@ logic  [31:0]   sw_reg_wdata;
 
 logic [31:0]    reg_0;            // Software_Reg 0
 logic [31:0]    reg_1;            // Software Reg 1
-logic [7:0]     cfg_bist_ctrl_1;    // BIST control
-logic [31:0]    cfg_bist_ctrl_2;    // BIST control
-logic [31:0]    cfg_bist_status_1;  // BIST Status
-logic [31:0]    cfg_bist_status_2;  // BIST Status
-logic [63:0]    serail_dout;      // BIST Serial Signature
 logic [31:0]    reg_9;            // Software_Reg 9
 logic [31:0]    reg_10;           // Software Reg 10
 logic [31:0]    reg_11;           // Software Reg 11
@@ -170,39 +148,13 @@ wire   sw_wr_en_9 = sw_wr_en & (sw_addr == 4'h9);
 wire   sw_wr_en_10 = sw_wr_en & (sw_addr == 4'hA);
 wire   sw_wr_en_11 = sw_wr_en & (sw_addr == 4'hB);
 
-logic wb_req;
-logic wb_req_d;
-logic wb_req_pedge;
-
-always_ff @(negedge reset_n or posedge mclk) begin
-    if ( reset_n == 1'b0 ) begin
-        wb_req    <= '0;
-	wb_req_d  <= '0;
-   end else begin
-       wb_req   <= reg_cs && (reg_ack == 0) ;
-       wb_req_d <= wb_req;
-   end
-end
-
-// Detect pos edge of request
-assign wb_req_pedge = (wb_req_d ==0) && (wb_req==1'b1);
-//-----------------------------------------------------------------
-// Reg 4/5 are BIST Serial I/F register and it takes minimum 32
-// cycle to respond ACK back
-// ----------------------------------------------------------------
-wire ser_acc     = sw_wr_en_6 | sw_rd_en_7;
-wire non_ser_acc = reg_cs ? !ser_acc : 1'b0;
-wire serial_ack;
 
 always @ (posedge mclk or negedge reset_n)
 begin : preg_out_Seq
    if (reset_n == 1'b0) begin
       reg_rdata  <= 'h0;
       reg_ack    <= 1'b0;
-   end else if (ser_acc && serial_ack)  begin
-      reg_rdata <= reg_out ;
-      reg_ack   <= 1'b1;
-   end else if (non_ser_acc && !reg_ack) begin
+   end else if (reg_cs && !reg_ack) begin
       reg_rdata <= reg_out ;
       reg_ack   <= 1'b1;
    end else begin
@@ -217,13 +169,6 @@ begin
   case (sw_addr [3:0])
     4'b0000 :   reg_out [31:0] = reg_0;
     4'b0001 :   reg_out [31:0] = reg_1;
-    4'b0010 :   reg_out [31:0] = {24'h0,cfg_bist_ctrl_1};
-    4'b0011 :   reg_out [31:0] = cfg_bist_ctrl_2 [31:0];    
-    4'b0100 :   reg_out [31:0] = cfg_bist_status_1 [31:0];     
-    4'b0101 :   reg_out [31:0] = cfg_bist_status_2 [31:0];     
-    4'b0110 :   reg_out [31:0] = 'h0; // Serial Write Data
-    4'b0111 :   reg_out [31:0] = serail_dout[31:0];  // Lower Shift
-    4'b1000 :   reg_out [31:0] = serail_dout[63:32]; // Upper Shift 
     4'b1001 :   reg_out [31:0] = reg_9; // Software Reg1
     4'b1010 :   reg_out [31:0] = reg_10; // Software Reg2
     4'b1011 :   reg_out [31:0] = reg_11; // Software Reg3
@@ -327,136 +272,6 @@ generic_register #(8,8'hDD  ) u_reg1_be3 (
 	      .data_out      (reg_1[31:24]        )
           );
 
-//-----------------------------------------------------------------------
-//   reg-2
-//   -----------------------------------------------------------------
-generic_register #(8,8'h0  ) u_reg2_be0 (
-	      .we            ({8{sw_wr_en_2 & 
-                                 wr_be[0]   }}  ),		 
-	      .data_in       (sw_reg_wdata[7:0]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (cfg_bist_ctrl_1[7:0]        )
-          );
-
-
-assign bist_serial_sel  = cfg_bist_ctrl_1[1:0];
-//-----------------------------------------------------------------------
-//   reg-3
-//   -----------------------------------------------------------------
-// Bist control
-assign bist_en              = cfg_bist_ctrl_2[0];
-assign bist_run             = cfg_bist_ctrl_2[1];
-assign bist_load            = cfg_bist_ctrl_2[2];
-
-
-
-
-generic_register #(8,8'h0  ) u_bist_ctrl_be0 (
-	      .we            ({8{sw_wr_en_3 & 
-                                 wr_be[0]   }}  ),		 
-	      .data_in       (sw_reg_wdata[7:0]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (cfg_bist_ctrl_2[7:0]        )
-          );
-
-generic_register #(8,8'h0  ) u_bist_ctrl_be1 (
-	      .we            ({8{sw_wr_en_3 & 
-                                 wr_be[1]   }}  ),		 
-	      .data_in       (sw_reg_wdata[15:8]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (cfg_bist_ctrl_2[15:8]        )
-          );
-generic_register #(8,8'h0  ) u_bist_ctrl_be2 (
-	      .we            ({8{sw_wr_en_3 & 
-                                 wr_be[2]   }}  ),		 
-	      .data_in       (sw_reg_wdata[23:16]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (cfg_bist_ctrl_2[23:16]        )
-          );
-
-generic_register #(8,8'h0  ) u_bist_ctrl_be3 (
-	      .we            ({8{sw_wr_en_3 & 
-                                 wr_be[3]   }}  ),		 
-	      .data_in       (sw_reg_wdata[31:24]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (cfg_bist_ctrl_2[31:24]        )
-          );
-
-
-//-----------------------------------------------------------------------
-//   reg-3
-//-----------------------------------------------------------------
-
-assign cfg_bist_status_2 = 'h0;
-assign cfg_bist_status_1 = {  bist_error_cnt3, 1'b0, bist_correct[3], bist_error[3], bist_done,
-	                      bist_error_cnt2, 1'b0, bist_correct[2], bist_error[2], bist_done,
-	                      bist_error_cnt1, 1'b0, bist_correct[1], bist_error[1], bist_done,
-	                      bist_error_cnt0, 1'b0, bist_correct[0], bist_error[0], bist_done
-			   };
-
-//-----------------------------------------------------------------------
-//   reg-4 => Write to Serail I/F
-//   reg-5 => READ  from Serail I/F
-//-----------------------------------------------------------------
-wire   bist_sdi_int;
-wire   bist_shift_int;
-wire   bist_sdo_int;
-
-assign bist_sdo_int = bist_sdo;
-assign  bist_shift = bist_shift_int ;
-assign  bist_sdi   = 1'b0 ; // Need fix - Dinesh A
-
-/*** Need Fix for Serial Out 
-ser_inf_32b u_ser_intf
-       (
-
-    // Master Port
-       .rst_n       (reset_n),  // Regular Reset signal
-       .clk         (mclk),  // System clock
-       .reg_wr      (sw_wr_en_6 & wb_req_pedge),  // Write Request
-       .reg_rd      (1;b0),  // Read Request
-       .reg_wdata   (reg_wdata) ,  // data output
-       .reg_rdata   (serail_dout),  // data input
-       .reg_ack     (serial_ack),  // acknowlegement
-
-    // Slave Port
-       .sdi         (bist_sdi_int),    // Serial SDI
-       .shift       (bist_shift_int),  // Shift Signal
-       .sdo         (bist_sdo_int) // Serial SDO
-
-    );
-****/
-
-ser_rd_inf_64b u_ser_intf
-       (
-
-    // Master Port
-       .rst_n       (reset_n),  // Regular Reset signal
-       .clk         (mclk),  // System clock
-       .reg_rd      (sw_rd_en_7 & wb_req_pedge),  // Read Request
-       .reg_rdata   (serail_dout),  // data input
-       .reg_ack     (serial_ack),  // acknowlegement
-
-    // Slave Port
-       .shift       (bist_shift_int),  // Shift Signal
-       .sdo         (bist_sdo_int) // Serial SDO
-
-    );
 
 //-----------------------------------------
 // Software Reg-1 : ASCI Representation of LBST = 32'h4C66_8354

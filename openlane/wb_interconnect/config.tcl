@@ -32,6 +32,7 @@ set ::env(SYNTH_MAX_FANOUT) 4
 set ::env(SYNTH_BUFFERING) {0}
 
 ## CTS BUFFER
+set ::env(CTS_CLK_MAX_WIRE_LENGTH) {250}
 set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8"
 set ::env(CTS_SINK_CLUSTERING_SIZE) "16"
 set ::env(CLOCK_BUFFER_FANOUT) "8"
@@ -43,13 +44,16 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 set ::env(VERILOG_FILES) "\
         $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/wb_stagging.sv                \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/sync_wbb.sv                \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/sync_fifo2.sv                \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/wb_arb.sv                \
         $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_interconnect.sv  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_slave_port.sv  \
 	"
 
 set ::env(SYNTH_PARAMETERS) "SCW=8 \
-                         CH_CLK_WD=9\
-	                 CH_DATA_WD=104 \
-			 "
+                             CH_CLK_WD=4\
+			                "
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 set ::env(SDC_FILE) "$::env(DESIGN_DIR)/base.sdc"
@@ -68,7 +72,7 @@ set ::env(SCAN_TOTAL_CHAINS) 8
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 200 2300"
+set ::env(DIE_AREA) "0 0 200 1500"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -78,14 +82,18 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(FP_CORE_UTIL) "50"
-set ::env(PL_TARGET_DENSITY) "0.50"
+set ::env(PL_TARGET_DENSITY) "0.22"
+#set ::env(CELL_PAD) "8"
+
+## Routing
+set ::env(GRT_ADJUSTMENT) 0.2
+
 
 # helps in anteena fix
-set ::env(USE_ARC_ANTENNA_CHECK) "1"
+set ::env(USE_ARC_ANTENNA_CHECK) "0"
 
-set ::env(FP_IO_VEXTEND) 4
-set ::env(FP_IO_HEXTEND) 4
+set ::env(FP_IO_VEXTEND) 2
+set ::env(FP_IO_HEXTEND) 2
 
 set ::env(FP_PDN_VPITCH) 100
 set ::env(FP_PDN_HPITCH) 100

@@ -1,0 +1,5 @@
+################# RTL Test case Summary #####################
+Monitor: user_mac_test1_tb (RTL) Passed
+Monitor: user_mbist_test1_tb (RTL) Passed
+Monitor: user_mbist_test2_tb (RTL) Passed
+################# End of Test case Summary #####################

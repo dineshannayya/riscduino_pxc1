@@ -22,6 +22,7 @@
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
 ////   Digital core MBIST logic through External WB i/F.          ////
+////   This test validate 8KB SRAM connected to mbist0 wrapper    ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -44,7 +45,10 @@
 `define NO_SRAM 4  // Number of SRAM connected to MBIST WRAPPER
 `define SRAM_AD 9  // SRAM ADDRESS WIDTH
 
-`define TB_TOP user_mbist_test1_tb
+`define TB_TOP          user_mbist_test1_tb
+`define TB_GLBL         `TB_TOP.tb_glbl
+
+`include "./tb_glbl.v"
 module `TB_TOP;
 
 	reg clock;
@@ -71,7 +75,6 @@ module `TB_TOP;
 	wire gpio;
 	wire [37:0] mprj_io;
 	wire [7:0] mprj_io_0;
-	reg        test_fail;
 	reg [31:0] read_data;
     reg [31:0] writemem [0:511];
     reg [`SRAM_AD-1:0]  faultaddr [0:7];
@@ -98,7 +101,7 @@ module `TB_TOP;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(0, user_mbist_test1_tb);
+	   	$dumpvars(0, `TB_TOP);
 	   end
     `endif
 
@@ -106,12 +109,12 @@ module `TB_TOP;
 		wb_rst_i <= 1'b1;
 		#100;
 		wb_rst_i <= 1'b0;	    	// Release reset
+        tb_glbl.init;
 
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Test Started");
 
-		test_fail = 0;
 		// Remove Wb Reset
 		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
         
@@ -128,7 +131,7 @@ module `TB_TOP;
 		// [7:4] - Bist Error Cnt - 4'h0
 		insert_fault(0,0,32'h01010101);
 
-          	if(test_fail == 0) begin
+          	if(`TB_GLBL.err_count == 0) begin
 	    	    $display("Monitor: Step-1: BIST Test without any Memory Error insertion test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-1: BIST Test without any Memory Error insertion test Failed");
@@ -147,7 +150,7 @@ module `TB_TOP;
 		faultaddr[0] = 9'h10;
 		insert_fault(1,1,32'h15151515);
 
-          	if(test_fail == 0) begin
+          	if(`TB_GLBL.err_count == 0) begin
 	    	    $display("Monitor: Step-2: BIST Test with One Memory Error insertion test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-2: BIST Test with One Memory Error insertion test Failed");
@@ -167,7 +170,7 @@ module `TB_TOP;
 		faultaddr[1] = 9'h20;
 		insert_fault(2,0,32'h25252525);
 
-          	if(test_fail == 0) begin
+          	if(`TB_GLBL.err_count == 0) begin
 	    	    $display("Monitor: Step-3: BIST Test with Two Memory Error insertion test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-3: BIST Test with Two Memory Error insertion test Failed");
@@ -188,7 +191,7 @@ module `TB_TOP;
 		faultaddr[2] = 9'h30;
 		insert_fault(3,1,32'h35353535);
 
-          	if(test_fail == 0) begin
+          	if(`TB_GLBL.err_count == 0) begin
 	    	    $display("Monitor: Step-4: BIST Test with Three Memory Error insertion test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-4: BIST Test with Three Memory Error insertion test Failed");
@@ -209,7 +212,7 @@ module `TB_TOP;
 		faultaddr[3] = 9'h40;
 		insert_fault(4,0,32'h45454545);
 
-          	if(test_fail == 0) begin
+          	if(`TB_GLBL.err_count == 0) begin
 	    	    $display("Monitor: Step-5: BIST Test with Four Memory Error insertion test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-5: BIST Test with Four Memory Error insertion test Failed");
@@ -232,7 +235,7 @@ module `TB_TOP;
 		faultaddr[3] = 9'h3;
 		insert_fault(4,0,32'h45454545);
 
-          	if(test_fail == 0) begin
+          	if(`TB_GLBL.err_count == 0) begin
 	    	    $display("Monitor: Step-5.2: BIST Test with Four Memory Error insertion test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-5.2: BIST Test with Four Memory Error insertion test Failed");
@@ -254,7 +257,7 @@ module `TB_TOP;
 		faultaddr[3] = 9'hF3;
 		insert_fault(4,0,32'h45454545);
 
-          	if(test_fail == 0) begin
+          	if(`TB_GLBL.err_count == 0) begin
 	    	    $display("Monitor: Step-5.3: BIST Test with Four Memory Error insertion test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-5.3: BIST Test with Four Memory Error insertion test Failed");
@@ -277,7 +280,7 @@ module `TB_TOP;
 		faultaddr[4] = 9'h50;
 		insert_fault(5,1,32'h47474747);
 
-          	if(test_fail == 0) begin
+          	if(`TB_GLBL.err_count == 0) begin
 	    	    $display("Monitor: Step-5: BIST Test with Five Memory Error insertion test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-5: BIST Test with Five Memory Error insertion test Failed");
@@ -291,7 +294,7 @@ module `TB_TOP;
 		fork
 		begin
 		    // Remove the Bist Enable and Bist Run
-                    wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_BIST_CTRL2,'h000);
+                    wb_user_core_write(`ADDR_SPACE_MBIST0+`MBIST_CFG_CTRL,'h000);
   
 	            // Fill Random Data	
 		    for (i=0; i< 9'h1FC; i=i+1) begin
@@ -342,15 +345,34 @@ module `TB_TOP;
                    // Loop for BIST TimeOut
                    repeat (200000) @(posedge clock);
                 		// $display("+1000 cycles");
-                   test_fail = 1;
+                   `TB_GLBL.test_err;
                 end
                 join_any
                 disable fork; //disable pending fork activity
-          	if(test_fail == 0) begin
+          	if(`TB_GLBL.err_count == 0) begin
 	    	    $display("Monitor: Step-5: BIST Test with Functional access test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-5: BIST Test with Functional access test failed");
 		 end
+
+
+        $display("###################################################");
+        if(`TB_GLBL.err_count == 0) begin
+           `ifdef GL
+               $display("Monitor: %m (GL) Passed");
+           `else
+               $display("Monitor: %m (RTL) Passed");
+           `endif
+        end else begin
+            `ifdef GL
+                $display("Monitor: %m (GL) Failed");
+            `else
+                $display("Monitor: %m (RTL) Failed");
+            `endif
+         end
+        $display("###################################################");
+        #100
+        $finish;
 
 	    	$display("###################################################");
 	        $finish;
@@ -395,6 +417,8 @@ user_project_wrapper u_top(
 
 );
 
+tb_glbl  tb_glbl ();
+
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin
@@ -417,15 +441,15 @@ reg [`SRAM_AD-1:0]  fail_addr1;
 reg [`SRAM_AD-1:0]  fail_addr2;
 reg [`SRAM_AD-1:0]  fail_addr3;
 reg [`SRAM_AD-1:0]  fail_addr4;
-integer j;
+reg [7:0] j;
 begin
    repeat (2) @(posedge clock);
    // Remove the Bist Enable and Bist Run
-   wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_BIST_CTRL2,'h000);
+   wb_user_core_write(`ADDR_SPACE_MBIST0+`MBIST_CFG_CTRL,'h000);
    // Remove WB and BIST RESET
    wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h001);
    // Set the Bist Enable and Bist Run
-   wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_BIST_CTRL2,'h00000003);
+   wb_user_core_write(`ADDR_SPACE_MBIST0+`MBIST_CFG_CTRL,'h003);
    // Remove WB and BIST RESET
    wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h003);
    fork
@@ -433,7 +457,7 @@ begin
       // Check for MBIST Done
       read_data = 'h0;
       while (read_data[0] != 1'b1) begin
-         wb_user_core_read(`ADDR_SPACE_GLBL+`GLBL_BIST_STAT,read_data);
+         wb_user_core_read(`ADDR_SPACE_MBIST0+`MBIST_CFG_STAT,read_data);
       end
       // wait for some time for all the BIST to complete
       repeat (1000) @(posedge clock);
@@ -443,7 +467,7 @@ begin
       // [2]   - Bist Correct   
       // [3]   - Reserved
       // [7:4] - Bist Error Cnt 
-      wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_BIST_STAT,read_data,mbist_signature[31:0],32'hFFFFFFFF);
+      wb_user_core_read_check(`ADDR_SPACE_MBIST0+`MBIST_CFG_STAT,read_data,mbist_signature[31:0],32'hFFFFFFFF);
    end
    // Insert  Error Insertion
    begin
@@ -533,7 +557,7 @@ begin
       // Loop for BIST TimeOut
       repeat (200000) @(posedge clock);
    		// $display("+1000 cycles");
-      test_fail = 1;
+      `TB_GLBL.test_err;
    end
    join_any
    disable fork; //disable pending fork activity
@@ -546,18 +570,18 @@ begin
       fail_addr4 = faultaddr[3]+j;
 
       // Select the Serial SDI/SDO interface
-      wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_BIST_CTRL1,j); 
+      wb_user_core_write(`ADDR_SPACE_MBIST0+`MBIST_CFG_CTRL,{27'h0,j[1:0], 3'b0}); 
       if(num_fault == 1)
-          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_BIST_SRLDATA,read_data,{16'h0,7'h0,fail_addr1},32'h0000_FFFF);
+          wb_user_core_read_check(`ADDR_SPACE_MBIST0+`MBIST_CFG_SRLDATA,read_data,{16'h0,7'h0,fail_addr1},32'h0000_FFFF);
       if(num_fault == 2)
-          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_BIST_SRLDATA,read_data,{7'h0,fail_addr2,7'h0,fail_addr1},32'hFFFF_FFFF);
+          wb_user_core_read_check(`ADDR_SPACE_MBIST0+`MBIST_CFG_SRLDATA,read_data,{7'h0,fail_addr2,7'h0,fail_addr1},32'hFFFF_FFFF);
       if(num_fault == 3) begin
-          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_BIST_SRLDATA,read_data,{7'h0,fail_addr2,7'h0,fail_addr1},32'hFFFF_FFFF);
-          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_BIST_SRMDATA,read_data,{16'h0,7'h0,fail_addr3},32'h0000_FFFF);
+          wb_user_core_read_check(`ADDR_SPACE_MBIST0+`MBIST_CFG_SRLDATA,read_data,{7'h0,fail_addr2,7'h0,fail_addr1},32'hFFFF_FFFF);
+          wb_user_core_read_check(`ADDR_SPACE_MBIST0+`MBIST_CFG_SRMDATA,read_data,{16'h0,7'h0,fail_addr3},32'h0000_FFFF);
       end
       if(num_fault >= 4) begin
-          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_BIST_SRLDATA,read_data,{7'h0,fail_addr2,7'h0,fail_addr1},32'hFFFF_FFFF);
-          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_BIST_SRMDATA,read_data,{7'h0,faultaddr[3]+j,7'h0,fail_addr3},32'hFFFF_FFFF);
+          wb_user_core_read_check(`ADDR_SPACE_MBIST0+`MBIST_CFG_SRLDATA,read_data,{7'h0,fail_addr2,7'h0,fail_addr1},32'hFFFF_FFFF);
+          wb_user_core_read_check(`ADDR_SPACE_MBIST0+`MBIST_CFG_SRMDATA,read_data,{7'h0,faultaddr[3]+j,7'h0,fail_addr3},32'hFFFF_FFFF);
       end
    end
 end
@@ -647,7 +671,7 @@ begin
   wbd_ext_sel_i ='h0;  // byte enable
   if((data & cmp_mask) !== (cmp_data & cmp_mask) ) begin
      $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,(cmp_data & cmp_mask),(data & cmp_mask));
-     test_fail = 1;
+     `TB_GLBL.test_err;
   end else begin
      $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,(data & cmp_mask));
   end

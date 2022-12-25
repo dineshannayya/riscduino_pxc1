@@ -265,7 +265,7 @@ uart_rxfsm u_rxfsm (
                .si               (si_ss              )
           );
 
-async_fifo_th #(W,DP,0,0) u_rxfifo (                  
+async_fifo_th #(W,DP,1,1) u_rxfifo (                  
                .wr_clk             (line_clk_16x       ),
                .wr_reset_n         (line_reset_n       ),
                .wr_en              (rx_fifo_wr         ),
@@ -281,7 +281,7 @@ async_fifo_th #(W,DP,0,0) u_rxfifo (
                .rd_data            (app_rxfifo_data    )
                 );
 
-async_fifo_th #(W,DP,0,0) u_txfifo  (
+async_fifo_th #(W,DP,1,1) u_txfifo  (
                .wr_clk             (app_clk            ),
                .wr_reset_n         (app_reset_n        ),
                .wr_en              (tx_fifo_wr_en      ),

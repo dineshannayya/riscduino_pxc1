@@ -156,7 +156,7 @@ module async_fifo (wr_clk,
     end
 
     wire [AW:0] grey_rd_ptr_dly ;
-    assign #1 grey_rd_ptr_dly = grey_rd_ptr;
+    assign grey_rd_ptr_dly = grey_rd_ptr;
 
     // read pointer synchronizer
     always @(posedge wr_clk or negedge wr_reset_n) begin
@@ -219,7 +219,7 @@ module async_fifo (wr_clk,
     assign rd_data = mem[rd_ptr[AW-1:0]];
 
     wire [AW:0] grey_wr_ptr_dly ;
-    assign #1 grey_wr_ptr_dly =  grey_wr_ptr;
+    assign grey_wr_ptr_dly =  grey_wr_ptr;
 
     // write pointer synchronizer
     always @(posedge rd_clk or negedge rd_reset_n) begin
@@ -342,22 +342,22 @@ end
 reg [AW:0] last_gwr_ptr;
 always @(posedge wr_clk or negedge wr_reset_n) begin
    if (!wr_reset_n) begin
-      last_gwr_ptr <= #1 0;
+      last_gwr_ptr <= 0;
    end
    else if (last_gwr_ptr !== grey_wr_ptr) begin
       check_ptr_chg(last_gwr_ptr, grey_wr_ptr);
-      last_gwr_ptr <= #1 grey_wr_ptr;
+      last_gwr_ptr <= grey_wr_ptr;
    end 	
 end
 
 reg [AW:0] last_grd_ptr;
 always @(posedge rd_clk or negedge rd_reset_n) begin
    if (!rd_reset_n) begin
-     last_grd_ptr <= #1 0;
+     last_grd_ptr <= 0;
    end
    else if (last_grd_ptr !== grey_rd_ptr) begin
       check_ptr_chg(last_grd_ptr, grey_rd_ptr);
-      last_grd_ptr <= #1 grey_rd_ptr;
+      last_grd_ptr <= grey_rd_ptr;
    end 	
 end
 

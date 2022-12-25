@@ -54,7 +54,6 @@ module wb_wr_mem2mem (
 
 
     // Master Interface Signal
-              mem_taddr           ,
               mem_addr            ,
               mem_empty           ,
               mem_aempty          ,
@@ -71,7 +70,6 @@ module wb_wr_mem2mem (
  
     // Slave Interface Signal
               wbo_din             , 
-              wbo_taddr           , 
               wbo_addr            , 
               wbo_be              , 
               wbo_we              , 
@@ -86,7 +84,6 @@ module wb_wr_mem2mem (
 parameter D_WD    = 16; // Data Width
 parameter BE_WD   = 2;  // Byte Enable
 parameter ADR_WD  = 28; // Address Width
-parameter TAR_WD  = 4;  // Target Width
 
 // State Machine
 parameter   IDLE       = 3'h0;
@@ -111,7 +108,6 @@ input               rst_n    ;  // RST_I The reset input [RST_I] forces the WISH
 //------------------------------------------
 // Stanard Memory Interface
 //------------------------------------------
-input [TAR_WD-1:0]  mem_taddr;  // target address 
 input [15:0]        mem_addr;   // memory address 
 input               mem_empty;  // memory empty 
 input               mem_aempty; // memory empty 
@@ -131,7 +127,6 @@ input [31:0]       desc_data;   // descriptor data
 //------------------------------------------
 // External Memory WB Interface
 //------------------------------------------
-output [TAR_WD-1:0] wbo_taddr ;
 output              wbo_stb  ; // STB_O The strobe output [STB_O] indicates a valid data 
                                // transfer cycle. It is used to qualify various other signals 
                                // on the interface such as [SEL_O(7..0)]. The SLAVE must 
@@ -196,7 +191,6 @@ input             wbo_rty; // RTY_I The retry input [RTY_I] indicates that the i
 // Register Dec
 //-------------------------------------------
 
-reg [TAR_WD-1:0]     wbo_taddr ;
 reg [ADR_WD-1:0]     wbo_addr  ;
 reg                  wbo_stb   ;
 reg                  wbo_we    ;
@@ -213,7 +207,6 @@ reg                  desc_ack  ; // delayed eop signal
 reg  [23:0]  tWrData; // Temp 24 Bit Data
 always @(negedge rst_n or posedge clk) begin
    if(rst_n == 0) begin
-      wbo_taddr <= 0;
       wbo_addr  <= 0;
       wbo_stb   <= 0;
       wbo_we    <= 0;
@@ -242,8 +235,7 @@ always @(negedge rst_n or posedge clk) begin
           if(mem_rd && mem_eop) begin
              mem_rd    <= 0;
              mem_eop_l <= mem_eop;
-             wbo_taddr <= mem_taddr;
-             wbo_addr  <= mem_addr[14:2];
+             wbo_addr  <= {mem_addr[15:2],2'b0};
              wbo_stb   <= 1'b1;
              wbo_we    <= 1'b1;
              wbo_be    <= 4'h1; // Assigned Aligned 32bit address
@@ -265,8 +257,7 @@ always @(negedge rst_n or posedge clk) begin
           if(mem_rd && mem_eop) begin
              mem_rd    <= 0;
              mem_eop_l <= mem_eop;
-             wbo_taddr <= mem_taddr;
-             wbo_addr  <= mem_addr[14:2];
+             wbo_addr  <= {mem_addr[15:2],2'b0};
              wbo_stb   <= 1'b1;
              wbo_we    <= 1'b1;
              wbo_be    <= 4'h3; // Assigned Aligned 32bit address
@@ -289,8 +280,7 @@ always @(negedge rst_n or posedge clk) begin
           if(mem_rd && mem_eop) begin
              mem_rd    <= 0;
              mem_eop_l <= mem_eop;
-             wbo_taddr <= mem_taddr;
-             wbo_addr  <= mem_addr[14:2];
+             wbo_addr  <= {mem_addr[15:2],2'b0};
              wbo_stb   <= 1'b1;
              wbo_we    <= 1'b1;
              wbo_be    <= 4'h7; // Assigned Aligned 32bit address
@@ -311,8 +301,7 @@ always @(negedge rst_n or posedge clk) begin
        RD_BYTE4: begin // End of Fourth Transfer
              mem_rd    <= 0;
              mem_eop_l <= mem_eop;
-             wbo_taddr <= mem_taddr;
-             wbo_addr  <= mem_addr[14:2];
+             wbo_addr  <= {mem_addr[15:2],2'b0};
              wbo_stb   <= 1'b1;
              wbo_we    <= 1'b1;
              wbo_be    <= 4'hF; // Assigned Aligned 32bit address
@@ -341,7 +330,7 @@ always @(negedge rst_n or posedge clk) begin
                 state     <= IDLE;
              end
              else begin
-                wbo_addr  <= {cfg_desc_baddr[15:6],desc_ptr[3:0]}; // Each Transfer is 32bit
+                wbo_addr  <= {cfg_desc_baddr[15:6],desc_ptr[3:0],2'b0}; // Each Transfer is 32bit
                 wbo_be    <= 4'hF;
                 wbo_din   <= desc_data;
                 wbo_we    <= 1'b1;

@@ -1,4 +1,6 @@
-module mac_wrapper (
+module mac_wrapper #(
+       parameter SCW = 8   // SCAN CHAIN WIDTH
+     )(
 
                    input logic         app_clk        ,
                    input logic         reset_n        ,
@@ -8,6 +10,13 @@ module mac_wrapper (
                   input logic          wbd_clk_int,
 	              output logic         wbd_clk_skew,
 
+                  // SCAN Daisy chain
+                  input logic             scan_en,
+                  input logic             scan_mode,
+                  input logic [SCW-1:0]   scan_si,
+                  output logic [SCW-1:0]  scan_so,
+                  output logic            scan_en_o,
+                  output logic            scan_mode_o,
 
                    //-----------------------------------------------------------------------
                    // Line-Tx Signal
@@ -41,7 +50,7 @@ module mac_wrapper (
                    input  logic [31:0] wbm_gtx_dat_i   ,
                    input  logic        wbm_gtx_ack_i   ,
                    output logic [31:0] wbm_gtx_dat_o   ,
-                   output logic [12:0] wbm_gtx_adr_o   ,
+                   output logic [15:0] wbm_gtx_adr_o   ,
                    output logic [3:0]  wbm_gtx_sel_o   ,
                    output logic        wbm_gtx_we_o    ,
                    output logic        wbm_gtx_stb_o   ,
@@ -53,7 +62,7 @@ module mac_wrapper (
                    input  logic [31:0]  wbm_grx_dat_i  ,
                    input  logic         wbm_grx_ack_i  ,
                    output logic [31:0]  wbm_grx_dat_o  ,
-                   output logic [12:0]  wbm_grx_adr_o  ,
+                   output logic [15:0]  wbm_grx_adr_o  ,
                    output logic [3:0]   wbm_grx_sel_o  ,
                    output logic         wbm_grx_we_o   ,
                    output logic         wbm_grx_stb_o  ,
@@ -261,9 +270,9 @@ g_mac_top u_eth_dut (
 // GMAX => MEMORY WRITE
 //-------------------------------------------------
 
-wb_rd_mem2mem #(.D_WD(32),.BE_WD(4),.ADR_WD(13),.TAR_WD(4)) u_wb_gmac_tx (
+wb_rd_mem2mem #(.D_WD(32),.BE_WD(4),.ADR_WD(16)) u_wb_gmac_tx (
 
-          .rst_n               ( gen_resetn         ),
+          .rst_n               ( reset_n            ),
           .clk                 ( app_clk            ),
 
     // descriptor handshake
@@ -271,7 +280,6 @@ wb_rd_mem2mem #(.D_WD(32),.BE_WD(4),.ADR_WD(13),.TAR_WD(4)) u_wb_gmac_tx (
           .desc_q_empty        (tx_q_empty           ),
 
     // Master Interface Signal
-          .mem_taddr           ( 4'h1               ),
           .mem_full            (app_txfifo_full_o   ),
           .mem_afull           (app_txfifo_afull_o  ),
           .mem_wr              (app_txfifo_wren_i   ), 
@@ -280,7 +288,6 @@ wb_rd_mem2mem #(.D_WD(32),.BE_WD(4),.ADR_WD(13),.TAR_WD(4)) u_wb_gmac_tx (
     // Slave Interface Signal
           .wbo_dout            ( wbm_gtx_dat_i      ),
           .wbo_ack             ( wbm_gtx_ack_i      ),
-          .wbo_taddr           (                    ),
           .wbo_addr            ( wbm_gtx_adr_o      ),
           .wbo_be              ( wbm_gtx_sel_o      ),
           .wbo_we              ( wbm_gtx_we_o       ),
@@ -291,14 +298,13 @@ wb_rd_mem2mem #(.D_WD(32),.BE_WD(4),.ADR_WD(13),.TAR_WD(4)) u_wb_gmac_tx (
          );
 
 
-wb_wr_mem2mem #(.D_WD(32),.BE_WD(4),.ADR_WD(13),.TAR_WD(4)) u_wb_gmac_rx(
+wb_wr_mem2mem #(.D_WD(32),.BE_WD(4),.ADR_WD(16)) u_wb_gmac_rx(
 
           .rst_n               ( reset_n      ), 
           .clk                 ( app_clk      ),
 
 
     // Master Interface Signal
-          .mem_taddr           ( 4'h1                 ),
           .mem_addr            (app_rxfifo_addr       ),
           .mem_empty           (app_rxfifo_empty_o    ),
           .mem_aempty          (app_rxfifo_aempty_o   ),
@@ -313,7 +319,6 @@ wb_wr_mem2mem #(.D_WD(32),.BE_WD(4),.ADR_WD(13),.TAR_WD(4)) u_wb_gmac_rx(
           .desc_data           (app_rx_desc_data      ),
     // Slave Interface Signal
           .wbo_din             ( wbm_grx_dat_o   ), 
-          .wbo_taddr           (                 ), 
           .wbo_addr            ( wbm_grx_adr_o   ), 
           .wbo_be              ( wbm_grx_sel_o   ), 
           .wbo_we              ( wbm_grx_we_o    ), 

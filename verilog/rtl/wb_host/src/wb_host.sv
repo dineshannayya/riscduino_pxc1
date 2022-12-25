@@ -131,19 +131,18 @@ module wb_host
 	// MBIST I/F
 
 
-       input   logic                io_in,
-	output   logic  [37:0]      io_out,
-	output   logic  [37:0]      io_oeb,
-        input    logic  [35:0]      la_data_in,
-        output   logic  [127:0]     la_data_out,
+    input   logic                  uartm_rxd,
+    output  logic                  uartm_txd,
+    input    logic  [35:0]         la_data_in,
+    output   logic  [127:0]        la_data_out,
 
 	// Scan Control Signal
-	output logic           scan_clk,
-	output logic           scan_rst_n,
-	output logic           scan_mode,
-	output logic           scan_en,
-	output logic [SCW-1:0] scan_in,
-	input  logic [SCW-1:0] scan_out
+	output logic                   scan_clk,
+	output logic                   scan_rst_n,
+	output logic                   scan_mode,
+	output logic                   scan_en,
+	output logic [SCW-1:0]         scan_in,
+	input  logic [SCW-1:0]         scan_out
 
     );
 
@@ -224,28 +223,14 @@ logic               lbist_scan_mode;
 logic               lbist_scan_en;
 logic [SCW-1:0]     lbist_scan_in;
 
-logic               uartm_rxd             ;
-logic               uartm_txd             ;
-
-// Drive UART TXD/RXD
-assign uartm_rxd = io_in;
-assign io_oeb[0] = 1'b1;
-assign io_out[0] = 1'b0;
-
-assign io_out[1] = uartm_txd;
-assign io_oeb[1] = 1'b0;
-
-assign io_out[37:2] = 'h0;
-assign io_oeb[37:2] = 'h0;
-
 //---------------------------------------------------
 // Local OR LA based Logic BIST Selection
 // --------------------------------------------------
 
-assign scan_clk      = (cfg_la_lbist) ? la_data_in[35] : lbist_scan_clk; 
-assign scan_rst_n    = (cfg_la_lbist) ? la_data_in[34] : lbist_scan_rst_n; 
-assign scan_mode_int = (cfg_la_lbist) ? la_data_in[33]  : lbist_scan_mode; 
-assign scan_en       = (cfg_la_lbist) ? la_data_in[32]  : lbist_scan_en; 
+assign scan_clk      = (cfg_la_lbist) ? la_data_in[35]   : lbist_scan_clk; 
+assign scan_rst_n    = (cfg_la_lbist) ? la_data_in[34]   : lbist_scan_rst_n; 
+assign scan_mode_int = (cfg_la_lbist) ? la_data_in[33]   : lbist_scan_mode; 
+assign scan_en       = (cfg_la_lbist) ? la_data_in[32]   : lbist_scan_en; 
 assign scan_in       = (cfg_la_lbist) ? la_data_in[31:24]: lbist_scan_in; 
 assign la_data_out   = {120'h0,scan_out};
 
