@@ -295,9 +295,9 @@ gen_32b_reg  #(32'h0) u_reg_8	(
 assign cfg_mac_clk_ctrl = reg_8;
 
 //-----------------------------------------
-// Software Reg-1 : ASCI Representation of LBST = 32'h4C66_8354
+// Software Reg-1 : Signature
 // ----------------------------------------
-gen_32b_reg  #(32'h4C66_8354) u_reg_9	(
+gen_32b_reg  #(CHIP_SIGNATURE) u_reg_9	(
 	      //List of Inputs
 	      .reset_n    (reset_n       ),
 	      .clk        (mclk          ),
@@ -312,7 +312,7 @@ gen_32b_reg  #(32'h4C66_8354) u_reg_9	(
 //-----------------------------------------
 // Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h1603_2022) u_reg_10	(
+gen_32b_reg  #(CHIP_RELEASE_DATE) u_reg_10	(
 	      //List of Inputs
 	      .reset_n    (reset_n       ),
 	      .clk        (mclk          ),
@@ -327,7 +327,7 @@ gen_32b_reg  #(32'h1603_2022) u_reg_10	(
 //-----------------------------------------
 // Software Reg-3: Poject Revison 1.6 = 0001600
 // ----------------------------------------
-gen_32b_reg  #(32'h0001_6000) u_reg_11	(
+gen_32b_reg  #(CHIP_REVISION) u_reg_11	(
 	      //List of Inputs
 	      .reset_n    (reset_n       ),
 	      .clk        (mclk          ),

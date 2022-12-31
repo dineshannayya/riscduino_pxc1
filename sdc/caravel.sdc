@@ -15,10 +15,15 @@ create_generated_clock -name wb_clk -add -source [get_ports {clock}] -master_clo
 create_clock -name wbs_clk_i -period 10.0000 [get_pins {mprj/u_wb_host/wbs_clk_out}]
 create_clock -name lbist_clk -period 10.0000 [get_pins {mprj/u_wb_host/clkbuf_0_u_lbist.lbist_clk/X}]
 create_clock -name uart_clk -period 100.0000 [get_pins {mprj/u_wb_host/u_uart2wb.u_core.u_uart_clk.genblk1.u_mux/X}]
+create_clock -name mdio_refclk -period 10.0000 [get_pins {mprj/u_pinmux/u_clkgen.u_mdio_ref_mux.u_mux_l10/X}]
 
 # Mac Tx and RX clock is 25Mhx-40ns
-create_clock -name mac_tx_clk -period 40.0000 [get_ports {mprj_io[5]}]
-create_clock -name mac_rx_clk -period 40.0000 [get_ports {mprj_io[12]}]
+create_clock -name pad_mac_tx_clk -period 40.0000  [get_ports {mprj_io[5]}]
+create_clock -name pad_mac_rx_clk -period 40.0000  [get_ports {mprj_io[12]}]
+create_clock -name mdio_clk   -period 100.0000 [get_pins {mprj/u_pinmux/u_clkgen.u_mdio_clkbuf.u_buf/X}]
+
+create_generated_clock -name mac_tx_clk -add -source [get_ports {mprj_io[5]}]  -master_clock [get_clocks pad_mac_tx_clk] -divide_by 1 -comment {mac tx clock} [get_pins {mprj/u_pinmux/mac_tx_clk}]
+create_generated_clock -name mac_rx_clk -add -source [get_ports {mprj_io[12]}] -master_clock [get_clocks pad_mac_rx_clk] -divide_by 1 -comment {mac rx clock} [get_pins {mprj/u_pinmux/mac_rx_clk}]
 
 set_clock_uncertainty -setup 0.2500 [all_clocks]
 set_clock_uncertainty -hold  0.1000 [all_clocks]
@@ -30,8 +35,10 @@ set_clock_groups \
    -group [get_clocks {wbs_clk_i}]\
    -group [get_clocks {uart_clk}]\
    -group [get_clocks {lbist_clk}]\
-   -group [get_clocks {mac_tx_clk}]\
-   -group [get_clocks {mac_rx_clk}]\
+   -group [get_clocks {mac_tx_clk pad_mac_tx_clk}]\
+   -group [get_clocks {mac_rx_clk pad_mac_rx_clk}]\
+   -group [get_clocks {mdio_refclk}]\
+   -group [get_clocks {mdio_clk}]\
    -group [get_clocks {hk_serial_clk}]\
    -group [get_clocks {hk_serial_load}]\
    -group [get_clocks {hkspi_clk}]
@@ -98,6 +105,48 @@ set_output_delay $output_delay_value  -clock [get_clocks {clk}] -add_delay [get_
 set_output_delay $output_delay_value  -clock [get_clocks {clk}] -add_delay [get_ports {flash_io1}]
 
 # set_output_delay $output_delay_value  -clock [get_clocks {hkspi_clk}] -add_delay [get_ports {mprj_io[1]}]
+
+########################################
+# phy_rx_clk Clock Domain
+########################################
+set_input_delay -max 20.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[19]}] 
+set_input_delay -max 20.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[18]}] 
+set_input_delay -max 20.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[17]}] 
+set_input_delay -max 20.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[16]}] 
+set_input_delay -max 20.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[15]}] 
+set_input_delay -max 20.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[14]}] 
+set_input_delay -max 20.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[13]}] 
+
+set_input_delay -min 2.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[19]}] 
+set_input_delay -min 2.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[18]}] 
+set_input_delay -min 2.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[17]}] 
+set_input_delay -min 2.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[16]}] 
+set_input_delay -min 2.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[15]}] 
+set_input_delay -min 2.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[14]}] 
+set_input_delay -min 2.0000 -clock [get_clocks {pad_mac_rx_clk}] -add_delay [get_ports {mprj_io[13]}] 
+
+
+
+########################################
+# phy_tx_clk Clock Domain
+########################################
+
+set_output_delay -max 20.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[6]}]  
+set_output_delay -max 20.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[7]}]  
+set_output_delay -max 20.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[8]}]  
+set_output_delay -max 20.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[9]}]  
+set_output_delay -max 20.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[10]}] 
+set_output_delay -max 20.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[11]}] 
+
+set_output_delay -min -2.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[6]}] 
+set_output_delay -min -2.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[7]}] 
+set_output_delay -min -2.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[8]}] 
+set_output_delay -min -2.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[9]}] 
+set_output_delay -min -2.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[10]}] 
+set_output_delay -min -2.0000 -clock [get_clocks {pad_mac_tx_clk}] -add_delay [get_ports {mprj_io[11]}] 
+
+
+
 
 set_max_fanout 12 [current_design]
 # synthesis max fanout should be less than 12 (7 maybe)

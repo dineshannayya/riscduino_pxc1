@@ -73,6 +73,7 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
+`include "user_params.svh"
 
 module wb_host 
    #(parameter SCW = 8   // SCAN CHAIN WIDTH
@@ -462,7 +463,7 @@ generic_register #(16,16'h1000 ) u_bank_sel (
           );
 
 
-generic_register #(32,0  ) u_clk_ctrl1 (
+generic_register #(32,CLK_SKEW1_RESET_VAL  ) u_clk_ctrl1 (
 	      .we            ({32{sw_wr_en_2}}   ),		 
 	      .data_in       (wb_dat_i[31:0]    ),
 	      .reset_n       (wbm_rst_n          ),
@@ -472,7 +473,7 @@ generic_register #(32,0  ) u_clk_ctrl1 (
 	      .data_out      (cfg_clk_ctrl1[31:0])
           );
 
-generic_register #(32,0  ) u_clk_ctrl2 (
+generic_register #(32,CLK_SKEW2_RESET_VAL  ) u_clk_ctrl2 (
 	      .we            ({32{sw_wr_en_3}}  ),		 
 	      .data_in       (wb_dat_i[31:0]   ),
 	      .reset_n       (wbm_rst_n         ),

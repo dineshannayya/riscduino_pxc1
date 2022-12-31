@@ -64,6 +64,7 @@ set ::env(VERILOG_FILES) "\
      $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart2_core.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart_msg_handler.v \
      "
+set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/ ]
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]

@@ -45,8 +45,13 @@
 ////          A. MAC core is integrated                           ////
 ////          B. glbl block moved inside the pinmux               ////
 ////          C. All the Pinmux are manged pinmux block           ////
+////    1.0 - 31th Dec 2022, Dinesh A                             ////
+////          A. Bus repeater added                               ////
+////          B. Glbl Register added with signature/revison       ////
 //////////////////////////////////////////////////////////////////////
 `default_nettype none
+
+`include "user_params.svh"
 
 module user_project_wrapper   (
 `ifdef USE_POWER_PINS

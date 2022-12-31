@@ -7,9 +7,9 @@ current_design mac_wrapper
 # Timing Constraints
 ###############################################################################
 create_clock -name  app_clk -period 10.0000 [get_ports {app_clk}]
-create_clock -name  phy_tx_clk -period 10.0000 [get_ports {phy_tx_clk}]
-create_clock -name  phy_rx_clk -period 10.0000 [get_ports {phy_rx_clk}]
-create_clock -name  mdio_clk -period 10.0000 [get_ports {mdio_clk}]
+create_clock -name  phy_tx_clk -period 40.0000 [get_ports {phy_tx_clk}]
+create_clock -name  phy_rx_clk -period 40.0000 [get_ports {phy_rx_clk}]
+create_clock -name  mdio_clk -period 100.0000 [get_ports {mdio_clk}]
 
 set_clock_transition 0.1500 [all_clocks]
 set_clock_uncertainty -setup 0.5000 [all_clocks]
@@ -58,10 +58,10 @@ set_output_delay -min -2.0000 -clock [get_clocks {mdio_clk}] -add_delay [get_por
 ########################################
 # phy_rx_clk Clock Domain
 ########################################
-set_input_delay -max 6.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_crs}]
-set_input_delay -max 6.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_rx_dv}]
-set_input_delay -max 6.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_rx_er}]
-set_input_delay -max 6.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_rxd[*]}]
+set_input_delay -max 20.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_crs}]
+set_input_delay -max 20.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_rx_dv}]
+set_input_delay -max 20.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_rx_er}]
+set_input_delay -max 20.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_rxd[*]}]
 
 set_input_delay -min -2.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_crs}]
 set_input_delay -min -2.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_ports {phy_rx_dv}]
@@ -73,9 +73,9 @@ set_input_delay -min -2.0000 -clock [get_clocks {phy_rx_clk}] -add_delay [get_po
 # phy_tx_clk Clock Domain
 ########################################
 
-set_output_delay -max 6.0000 -clock [get_clocks {phy_tx_clk}] -add_delay [get_ports {phy_tx_en}]
-set_output_delay -max 6.0000 -clock [get_clocks {phy_tx_clk}] -add_delay [get_ports {phy_tx_er}]
-set_output_delay -max 6.0000 -clock [get_clocks {phy_tx_clk}] -add_delay [get_ports {phy_txd[*]}]
+set_output_delay -max 20.0000 -clock [get_clocks {phy_tx_clk}] -add_delay [get_ports {phy_tx_en}]
+set_output_delay -max 20.0000 -clock [get_clocks {phy_tx_clk}] -add_delay [get_ports {phy_tx_er}]
+set_output_delay -max 20.0000 -clock [get_clocks {phy_tx_clk}] -add_delay [get_ports {phy_txd[*]}]
 
 set_output_delay -min -2.0000 -clock [get_clocks {phy_tx_clk}] -add_delay [get_ports {phy_tx_en}]
 set_output_delay -min -2.0000 -clock [get_clocks {phy_tx_clk}] -add_delay [get_ports {phy_tx_er}]

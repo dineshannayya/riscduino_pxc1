@@ -23,11 +23,9 @@ Warning: There are 21 input ports missing set_input_delay.
   vssd2
   vssio
   vssio_2
-Warning: There are 57 output ports missing set_output_delay.
+Warning: There are 51 output ports missing set_output_delay.
   gpio
   mprj_io[0]
-  mprj_io[10]
-  mprj_io[11]
   mprj_io[12]
   mprj_io[13]
   mprj_io[14]
@@ -59,10 +57,6 @@ Warning: There are 57 output ports missing set_output_delay.
   mprj_io[3]
   mprj_io[4]
   mprj_io[5]
-  mprj_io[6]
-  mprj_io[7]
-  mprj_io[8]
-  mprj_io[9]
   vccd
   vccd1
   vccd2
@@ -81,7 +75,7 @@ Warning: There are 57 output ports missing set_output_delay.
   vssd2
   vssio
   vssio_2
-Warning: There are 151 unclocked register/latch pins.
+Warning: There are 93 unclocked register/latch pins.
   clock_ctrl/_412_/CLK
   clock_ctrl/_413_/CLK
   clock_ctrl/_414_/CLK
@@ -136,64 +130,6 @@ Warning: There are 151 unclocked register/latch pins.
   clock_ctrl/_463_/CLK
   clock_ctrl/_464_/CLK
   clock_ctrl/_465_/CLK
-  mprj/u_mac_wrap/_08461_/CLK
-  mprj/u_mac_wrap/_08462_/CLK
-  mprj/u_mac_wrap/_08463_/CLK
-  mprj/u_mac_wrap/_08464_/CLK
-  mprj/u_mac_wrap/_08465_/CLK
-  mprj/u_mac_wrap/_08466_/CLK
-  mprj/u_mac_wrap/_08467_/CLK
-  mprj/u_mac_wrap/_08468_/CLK
-  mprj/u_mac_wrap/_08469_/CLK
-  mprj/u_mac_wrap/_08470_/CLK
-  mprj/u_mac_wrap/_08471_/CLK
-  mprj/u_mac_wrap/_08472_/CLK
-  mprj/u_mac_wrap/_08473_/CLK
-  mprj/u_mac_wrap/_08474_/CLK
-  mprj/u_mac_wrap/_08475_/CLK
-  mprj/u_mac_wrap/_08725_/CLK
-  mprj/u_mac_wrap/_08726_/CLK
-  mprj/u_mac_wrap/_08727_/CLK
-  mprj/u_mac_wrap/_08728_/CLK
-  mprj/u_mac_wrap/_08729_/CLK
-  mprj/u_mac_wrap/_08730_/CLK
-  mprj/u_mac_wrap/_08731_/CLK
-  mprj/u_mac_wrap/_08732_/CLK
-  mprj/u_mac_wrap/_09100_/CLK
-  mprj/u_mac_wrap/_09101_/CLK
-  mprj/u_mac_wrap/_09102_/CLK
-  mprj/u_mac_wrap/_09103_/CLK
-  mprj/u_mac_wrap/_09104_/CLK
-  mprj/u_mac_wrap/_09105_/CLK
-  mprj/u_mac_wrap/_09106_/CLK
-  mprj/u_mac_wrap/_09107_/CLK
-  mprj/u_mac_wrap/_09108_/CLK
-  mprj/u_mac_wrap/_09109_/CLK
-  mprj/u_mac_wrap/_09110_/CLK
-  mprj/u_mac_wrap/_09111_/CLK
-  mprj/u_mac_wrap/_09112_/CLK
-  mprj/u_mac_wrap/_09113_/CLK
-  mprj/u_mac_wrap/_09114_/CLK
-  mprj/u_mac_wrap/_09115_/CLK
-  mprj/u_mac_wrap/_09116_/CLK
-  mprj/u_mac_wrap/_09117_/CLK
-  mprj/u_mac_wrap/_09239_/CLK
-  mprj/u_mac_wrap/_09240_/CLK
-  mprj/u_mac_wrap/_09241_/CLK
-  mprj/u_mac_wrap/_09242_/CLK
-  mprj/u_mac_wrap/_09243_/CLK
-  mprj/u_mac_wrap/_09244_/CLK
-  mprj/u_mac_wrap/_09245_/CLK
-  mprj/u_mac_wrap/_09246_/CLK
-  mprj/u_mac_wrap/_09247_/CLK
-  mprj/u_mac_wrap/_09248_/CLK
-  mprj/u_mac_wrap/_09249_/CLK
-  mprj/u_mac_wrap/_09250_/CLK
-  mprj/u_mac_wrap/_09251_/CLK
-  mprj/u_mac_wrap/_09252_/CLK
-  mprj/u_mac_wrap/_09253_/CLK
-  mprj/u_mac_wrap/_09254_/CLK
-  mprj/u_mac_wrap/_09853_/CLK
   mprj/u_sram0_2kb/clk1
   mprj/u_sram1_2kb/clk1
   mprj/u_sram2_2kb/clk1
@@ -233,12 +169,10 @@ Warning: There are 151 unclocked register/latch pins.
   spare_logic[2]/spare_logic_flop[1]/CLK
   spare_logic[3]/spare_logic_flop[0]/CLK
   spare_logic[3]/spare_logic_flop[1]/CLK
-Warning: There are 422 unconstrained endpoints.
+Warning: There are 357 unconstrained endpoints.
   flash_io1
   gpio
   mprj_io[0]
-  mprj_io[10]
-  mprj_io[11]
   mprj_io[12]
   mprj_io[13]
   mprj_io[14]
@@ -270,10 +204,6 @@ Warning: There are 422 unconstrained endpoints.
   mprj_io[3]
   mprj_io[4]
   mprj_io[5]
-  mprj_io[6]
-  mprj_io[7]
-  mprj_io[8]
-  mprj_io[9]
   vccd
   vccd1
   vccd2
@@ -348,65 +278,6 @@ Warning: There are 422 unconstrained endpoints.
   clock_ctrl/_464_/D
   clock_ctrl/_465_/D
   housekeeping/_7103_/D
-  mprj/u_mac_wrap/_08461_/D
-  mprj/u_mac_wrap/_08462_/D
-  mprj/u_mac_wrap/_08463_/D
-  mprj/u_mac_wrap/_08464_/D
-  mprj/u_mac_wrap/_08465_/D
-  mprj/u_mac_wrap/_08466_/D
-  mprj/u_mac_wrap/_08467_/D
-  mprj/u_mac_wrap/_08468_/D
-  mprj/u_mac_wrap/_08469_/D
-  mprj/u_mac_wrap/_08470_/D
-  mprj/u_mac_wrap/_08471_/D
-  mprj/u_mac_wrap/_08472_/D
-  mprj/u_mac_wrap/_08473_/D
-  mprj/u_mac_wrap/_08474_/D
-  mprj/u_mac_wrap/_08475_/D
-  mprj/u_mac_wrap/_08725_/D
-  mprj/u_mac_wrap/_08726_/D
-  mprj/u_mac_wrap/_08727_/D
-  mprj/u_mac_wrap/_08728_/D
-  mprj/u_mac_wrap/_08729_/D
-  mprj/u_mac_wrap/_08730_/D
-  mprj/u_mac_wrap/_08731_/D
-  mprj/u_mac_wrap/_08732_/D
-  mprj/u_mac_wrap/_09100_/D
-  mprj/u_mac_wrap/_09101_/D
-  mprj/u_mac_wrap/_09102_/D
-  mprj/u_mac_wrap/_09103_/D
-  mprj/u_mac_wrap/_09104_/D
-  mprj/u_mac_wrap/_09105_/D
-  mprj/u_mac_wrap/_09106_/D
-  mprj/u_mac_wrap/_09107_/D
-  mprj/u_mac_wrap/_09108_/D
-  mprj/u_mac_wrap/_09109_/D
-  mprj/u_mac_wrap/_09110_/D
-  mprj/u_mac_wrap/_09111_/D
-  mprj/u_mac_wrap/_09112_/D
-  mprj/u_mac_wrap/_09113_/D
-  mprj/u_mac_wrap/_09114_/D
-  mprj/u_mac_wrap/_09115_/D
-  mprj/u_mac_wrap/_09116_/D
-  mprj/u_mac_wrap/_09117_/D
-  mprj/u_mac_wrap/_09239_/D
-  mprj/u_mac_wrap/_09240_/D
-  mprj/u_mac_wrap/_09241_/D
-  mprj/u_mac_wrap/_09242_/D
-  mprj/u_mac_wrap/_09243_/D
-  mprj/u_mac_wrap/_09244_/D
-  mprj/u_mac_wrap/_09245_/D
-  mprj/u_mac_wrap/_09246_/D
-  mprj/u_mac_wrap/_09247_/D
-  mprj/u_mac_wrap/_09248_/D
-  mprj/u_mac_wrap/_09249_/D
-  mprj/u_mac_wrap/_09250_/D
-  mprj/u_mac_wrap/_09251_/D
-  mprj/u_mac_wrap/_09252_/D
-  mprj/u_mac_wrap/_09253_/D
-  mprj/u_mac_wrap/_09254_/D
-  mprj/u_mac_wrap/_09774_/D
-  mprj/u_mac_wrap/_09853_/D
   mprj/u_mbist0/_4497_/D
   mprj/u_mbist1/_4497_/D
   mprj/u_sram0_2kb/addr1[0]
@@ -489,10 +360,10 @@ Warning: There are 422 unconstrained endpoints.
   mprj/u_sram7_2kb/addr1[7]
   mprj/u_sram7_2kb/addr1[8]
   mprj/u_sram7_2kb/csb1
-  mprj/u_wb_host/_5882_/D
-  mprj/u_wb_host/_5917_/D
-  mprj/u_wb_host/_5958_/D
-  mprj/u_wb_host/_6421_/D
+  mprj/u_wb_host/_5876_/D
+  mprj/u_wb_host/_5950_/D
+  mprj/u_wb_host/_5952_/D
+  mprj/u_wb_host/_6415_/D
   mprj/u_wb_host/u_lbist.u_lbist_core.u_scan_gate.u_clk_gate/SCE
   pll/_455_/D
   pll/_456_/D

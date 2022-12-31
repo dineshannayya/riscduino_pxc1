@@ -56,6 +56,10 @@
     read_verilog $::env(USER_ROOT)/verilog/gl/pinmux_top.v
     read_verilog $::env(USER_ROOT)/verilog/gl/mbist_wrapper.v
     read_verilog $::env(USER_ROOT)/verilog/gl/mac_wrapper.v  
+    read_verilog $::env(USER_ROOT)/verilog/gl/bus_rep_north.v
+    read_verilog $::env(USER_ROOT)/verilog/gl/bus_rep_south.v
+    read_verilog $::env(USER_ROOT)/verilog/gl/bus_rep_east.v
+    read_verilog $::env(USER_ROOT)/verilog/gl/bus_rep_west.v
     read_verilog $::env(USER_ROOT)/verilog/gl/user_project_wrapper.v  
 
 
@@ -115,6 +119,10 @@
     read_spef -path mprj/u_mbist0        $::env(USER_ROOT)/signoff/mbist_wrapper/openlane-signoff/spef/mbist_wrapper.min.spef
     read_spef -path mprj/u_mbist1        $::env(USER_ROOT)/signoff/mbist_wrapper/openlane-signoff/spef/mbist_wrapper.min.spef
     read_spef -path mprj/u_pinmux        $::env(USER_ROOT)/signoff/pinmux_top/openlane-signoff/spef/pinmux_top.min.spef
+	read_spef -path mprj/u_rp_north      $::env(USER_ROOT)/signoff/bus_rep_north/openlane-signoff/spef/bus_rep_north.nom.spef
+	read_spef -path mprj/u_rp_south      $::env(USER_ROOT)/signoff/bus_rep_south/openlane-signoff/spef/bus_rep_south.nom.spef
+	read_spef -path mprj/u_rp_east       $::env(USER_ROOT)/signoff/bus_rep_east/openlane-signoff/spef/bus_rep_east.nom.spef
+	read_spef -path mprj/u_rp_west       $::env(USER_ROOT)/signoff/bus_rep_west/openlane-signoff/spef/bus_rep_west.nom.spef
     read_spef -path mprj                 $::env(USER_ROOT)/signoff/user_project_wrapper/openlane-signoff/spef/user_project_wrapper.min.spef
 
     read_spef $::env(CARAVEL_ROOT)/signoff/caravel/openlane-signoff/spef/caravel.min.spef
@@ -181,4 +189,35 @@
 	#set sram_oport [concat $sram_oport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/dout1[*]}]]
     ### Caravel SRAM Path ######################################
    
+    #MAC RX Path
+    report_checks -path_group mac_rx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[19]}] -through [get_pins mprj/u_mac_wrap/phy_rxd[3]] > mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[18]}] -through [get_pins mprj/u_mac_wrap/phy_rxd[2]] >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[17]}] -through [get_pins mprj/u_mac_wrap/phy_rxd[1]] >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[16]}] -through [get_pins mprj/u_mac_wrap/phy_rxd[0]] >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[15]}] -through [get_pins mprj/u_mac_wrap/phy_crs]    >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[14]}] -through [get_pins mprj/u_mac_wrap/phy_rx_er]  >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[13]}] -through [get_pins mprj/u_mac_wrap/phy_rx_dv]  >> mac.vio.rpt
+
+    report_checks -path_group mac_rx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[19]}] -through [get_pins mprj/u_mac_wrap/phy_rxd[3]] >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[18]}] -through [get_pins mprj/u_mac_wrap/phy_rxd[2]] >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[17]}] -through [get_pins mprj/u_mac_wrap/phy_rxd[1]] >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[16]}] -through [get_pins mprj/u_mac_wrap/phy_rxd[0]] >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[15]}] -through [get_pins mprj/u_mac_wrap/phy_crs]    >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[14]}] -through [get_pins mprj/u_mac_wrap/phy_rx_er]  >> mac.vio.rpt
+    report_checks -path_group mac_rx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -from [get_ports {mprj_io[13]}] -through [get_pins mprj/u_mac_wrap/phy_rx_dv]  >> mac.vio.rpt
+
+    #MAC TX Path
+    report_checks -path_group pad_mac_tx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[6]}]  -through [get_pins mprj/u_mac_wrap/phy_tx_en] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[7]}]  -through [get_pins mprj/u_mac_wrap/phy_tx_er] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[8]}]  -through [get_pins mprj/u_mac_wrap/phy_txd[0]] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[9]}]  -through [get_pins mprj/u_mac_wrap/phy_txd[1]] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[10]}] -through [get_pins mprj/u_mac_wrap/phy_txd[2]] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[11]}] -through [get_pins mprj/u_mac_wrap/phy_txd[3]]  >> mac.vio.rpt
+
+    report_checks -path_group pad_mac_tx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[6]}]  -through [get_pins mprj/u_mac_wrap/phy_tx_en] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[7]}]  -through [get_pins mprj/u_mac_wrap/phy_tx_er] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[8]}]  -through [get_pins mprj/u_mac_wrap/phy_txd[0]] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[9]}]  -through [get_pins mprj/u_mac_wrap/phy_txd[1]] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[10]}] -through [get_pins mprj/u_mac_wrap/phy_txd[2]] >> mac.vio.rpt
+    report_checks -path_group pad_mac_tx_clk -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -to [get_ports {mprj_io[11]}] -through [get_pins mprj/u_mac_wrap/phy_txd[3]]  >> mac.vio.rpt
 

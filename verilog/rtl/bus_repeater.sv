@@ -384,6 +384,7 @@ assign {
                     la_data_out[38],
                     la_data_out[37],
                     la_data_out[36],
+                    la_data_out[35],
                     la_data_in_rp[35],
                     la_data_out[34],
                     la_data_in_rp[34],

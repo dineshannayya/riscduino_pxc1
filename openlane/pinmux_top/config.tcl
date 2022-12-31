@@ -46,11 +46,13 @@ set ::env(VERILOG_FILES) "\
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv       \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/registers.v          \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_ctl.v            \
-        $::env(DESIGN_DIR)/../../verilog/rtl/glbl/src/glbl_cfg.sv     \
         $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux_top.sv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/glbl/src/glbl_cfg.sv     \
         $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux.sv     \
         $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/clkgen.sv     \
 	"
+
+set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/ ]
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
