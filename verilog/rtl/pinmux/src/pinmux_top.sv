@@ -82,6 +82,14 @@ module pinmux_top #(parameter SCW = 8   // SCAN CHAIN WIDTH
         );
 
 
+logic [1:0]  cfg_mac_tx_clk_sel;
+logic [1:0]  cfg_mac_rx_clk_sel;
+logic [1:0]  cfg_mac_mdio_refclk_sel;
+logic [7:0]  cfg_mdio_clk_div_ratio;
+logic        pad_mac_tx_clk;
+logic        pad_mac_rx_clk;
+logic [31:0] cfg_mac_clk_ctrl;
+
 //-----------------------------------------------------------------------
 // Main code starts here
 //-----------------------------------------------------------------------
@@ -127,10 +135,41 @@ glbl_cfg u_glbl(
 
        // Outputs
           .reg_rdata          (reg_rdata            ),
-          .reg_ack            (reg_ack              )
+          .reg_ack            (reg_ack              ),
 
+           .cfg_mac_clk_ctrl  (cfg_mac_clk_ctrl     )
 
     );
+
+
+assign cfg_mac_tx_clk_sel      = cfg_mac_clk_ctrl[1:0];
+assign cfg_mac_rx_clk_sel      = cfg_mac_clk_ctrl[3:2];
+assign cfg_mac_mdio_refclk_sel = cfg_mac_clk_ctrl[5:4];
+assign cfg_mdio_clk_div_ratio  = cfg_mac_clk_ctrl[15:8];
+
+
+clkgen u_clkgen ( 
+
+   // Global Reset/clok
+      .reset_n                 (reset_n                 ),
+      .mclk                    (mclk                    ),
+
+    // Clock from Pad
+      .pad_mac_tx_clk          (pad_mac_tx_clk          ),
+      .pad_mac_rx_clk          (pad_mac_rx_clk          ),
+
+    // Configuration
+      .cfg_mac_tx_clk_sel      (cfg_mac_tx_clk_sel      ),
+      .cfg_mac_rx_clk_sel      (cfg_mac_rx_clk_sel      ),
+      .cfg_mac_mdio_refclk_sel (cfg_mac_mdio_refclk_sel ),
+      .cfg_mdio_clk_div_ratio  (cfg_mdio_clk_div_ratio  ),
+
+      .mac_rx_clk              (mac_rx_clk              ),
+      .mac_tx_clk              (mac_tx_clk              ),
+      .mdio_clk                (mdio_clk                )
+
+   );
+
 
 
 pinmux u_pinmux(
@@ -138,19 +177,19 @@ pinmux u_pinmux(
     //-----------------------------------------------------------------------
     // MAC-Tx Signal
     //-----------------------------------------------------------------------
-    .mac_tx_clk              (mac_tx_clk  ),
-    .mac_tx_en               (mac_tx_en   ),
-    .mac_tx_er               (mac_tx_er   ),
-    .mac_txd                 (mac_txd     ),
+    .mac_tx_clk              (pad_mac_tx_clk  ),
+    .mac_tx_en               (mac_tx_en       ),
+    .mac_tx_er               (mac_tx_er       ),
+    .mac_txd                 (mac_txd         ),
                    
     //-----------------------------------------------------------------------
     // MAC-Rx Signal
     //-----------------------------------------------------------------------
-    .mac_rx_clk              (mac_rx_clk  ),
-    .mac_rx_er               (mac_rx_er   ),
-    .mac_rx_dv               (mac_rx_dv   ),
-    .mac_rxd                 (mac_rxd     ),
-    .mac_crs                 (mac_crs     ),
+    .mac_rx_clk              (pad_mac_rx_clk  ),
+    .mac_rx_er               (mac_rx_er       ),
+    .mac_rx_dv               (mac_rx_dv       ),
+    .mac_rxd                 (mac_rxd         ),
+    .mac_crs                 (mac_crs         ),
                    
                    
     //-----------------------------------------------------------------------

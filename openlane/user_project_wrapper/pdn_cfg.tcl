@@ -157,12 +157,39 @@ if { $::env(FP_PDN_CORE_RING) == 1 } {
 
 define_pdn_grid \
     -macro \
-    -default \
-    -name macro \
+    -name macro_1 \
+    -instances "u_wb_host u_pinmux u_mac_wrap u_intercon u_mbist0 u_sram0_2kb u_sram1_2kb u_sram2_2kb u_sram3_2kb u_mbist1 u_sram4_2kb u_sram5_2kb u_sram6_2kb u_sram7_2kb" \
     -starts_with POWER \
     -halo "$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)"
 
 add_pdn_connect \
-    -grid macro \
+    -grid macro_1 \
     -layers "$::env(FP_PDN_LOWER_LAYER) $::env(FP_PDN_UPPER_LAYER)"
 
+##################################
+# u_rp_North & u_rp_south Power Hook Up
+#  Power connect met-3 to met-4
+##################################
+
+define_pdn_grid \
+    -macro \
+    -name macro_2 \
+    -instances "u_rp_south u_rp_north" \
+    -starts_with POWER \
+    -halo "$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)"
+
+add_pdn_connect -grid macro_2 -layers "met3 met4"
+
+##################################
+# u_rp_east Power Hook Up
+#  Power connect met-3 to met-5
+##################################
+
+define_pdn_grid \
+    -macro \
+    -name macro_3 \
+    -instances "u_rp_east u_rp_west" \
+    -starts_with POWER \
+    -halo "$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)"
+
+add_pdn_connect -grid macro_3 -layers "met3 met5"

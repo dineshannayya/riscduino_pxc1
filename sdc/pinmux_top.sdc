@@ -1,14 +1,20 @@
 ###############################################################################
 # Created by write_sdc
-# Sat Dec 24 13:52:02 2022
+# Sun Dec 25 14:12:46 2022
 ###############################################################################
 current_design pinmux_top
 ###############################################################################
 # Timing Constraints
 ###############################################################################
 create_clock -name mclk -period 10.0000 [get_ports {mclk}]
+set_clock_uncertainty 0.2500 mclk
 set_propagated_clock [get_clocks {mclk}]
-set_clock_uncertainty -from [get_clocks {mclk}] -to [get_clocks {mclk}] 0.2500
+create_clock -name mdio_refclk -period 10.0000 [get_pins {u_clkgen.u_mdio_ref_mux.u_mux_l10/X}]
+set_clock_uncertainty 0.2500 mdio_refclk
+set_propagated_clock [get_clocks {mdio_refclk}]
+set_clock_groups -name clock_group -logically_exclusive \
+ -group [get_clocks {mclk}]\
+ -group [get_clocks {mdio_refclk}]
 set_input_delay 2.0000 -clock [get_clocks {mclk}] -min -add_delay [get_ports {reg_addr[0]}]
 set_input_delay 6.0000 -clock [get_clocks {mclk}] -max -add_delay [get_ports {reg_addr[0]}]
 set_input_delay 2.0000 -clock [get_clocks {mclk}] -min -add_delay [get_ports {reg_addr[1]}]
@@ -171,6 +177,9 @@ set_output_delay 1.0000 -clock [get_clocks {mclk}] -min -add_delay [get_ports {r
 set_output_delay 6.0000 -clock [get_clocks {mclk}] -max -add_delay [get_ports {reg_rdata[9]}]
 set_max_delay\
     -from [get_ports {wbd_clk_int}] 3.5000
+set_max_delay\
+    -from [get_ports {wbd_clk_int}]\
+    -to [get_ports {wbd_clk_skew}] 2.5000
 ###############################################################################
 # Environment
 ###############################################################################
@@ -424,6 +433,10 @@ set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_ris
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {scan_si[2]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {scan_si[1]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {scan_si[0]}]
+set_case_analysis 0 [get_ports {cfg_cska_pinmux[0]}]
+set_case_analysis 0 [get_ports {cfg_cska_pinmux[1]}]
+set_case_analysis 0 [get_ports {cfg_cska_pinmux[2]}]
+set_case_analysis 0 [get_ports {cfg_cska_pinmux[3]}]
 set_case_analysis 0 [get_ports {scan_en}]
 set_case_analysis 0 [get_ports {scan_mode}]
 set_timing_derate -early 0.9500

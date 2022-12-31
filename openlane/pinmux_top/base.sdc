@@ -6,15 +6,18 @@ current_design glbl_cfg
 ###############################################################################
 # Timing Constraints
 ###############################################################################
-create_clock -name mclk -period 10.0000 [get_ports {mclk}]
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold 0.2500
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2500
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold 0.2500
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold 0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold 0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2500
+create_clock -name mclk        -period 10.0000 [get_ports {mclk}]
+create_clock -name mdio_refclk -period 10.0000 [get_pins {u_clkgen.u_mdio_ref_mux.u_mux_l10/X}]
+
+set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -hold  0.2500 [all_clocks]
+
+set_clock_groups \
+   -name clock_group \
+   -logically_exclusive \
+   -group [get_clocks {mclk}]\
+   -group [get_clocks {mdio_refclk}]
+
 
 set ::env(SYNTH_TIMING_DERATE) 0.05
 puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
@@ -43,55 +46,15 @@ set_output_delay -min 1.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {r
 set_output_delay -min 1.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {reg_rdata[*]}]
 
 
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_done[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_correct[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_done[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt0[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt1[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt2[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt3[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt4[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt5[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt6[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt7[*]}]
-set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_sdo[*]}]
-
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_done[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_correct[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_done[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt0[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt1[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt2[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt3[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt4[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt5[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt6[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_error_cnt7[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_sdo[*]}]
-
-
-set_output_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_en}]
-set_output_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_run[*]}]
-set_output_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_load[*]}]
-set_output_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_sdi[*]}]
-set_output_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_shift[*]}]
-
-set_output_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_en}]
-set_output_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_run[*]}]
-set_output_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_load[*]}]
-set_output_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_sdi[*]}]
-set_output_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {bist_shift[*]}]
 
 # Set max delay for clock skew
 set_max_delay   3.5 -from [get_ports {wbd_clk_int}]
-set_max_delay   2.5 -from wbd_clk_int -to wbd_clk_glbl
+set_max_delay   2.5 -from wbd_clk_int -to wbd_clk_skew
 
-set_case_analysis 0 [get_ports {cfg_cska_glbl[0]}]
-set_case_analysis 0 [get_ports {cfg_cska_glbl[1]}]
-set_case_analysis 0 [get_ports {cfg_cska_glbl[2]}]
-set_case_analysis 0 [get_ports {cfg_cska_glbl[3]}]
+set_case_analysis 0 [get_ports {cfg_cska_pinmux[0]}]
+set_case_analysis 0 [get_ports {cfg_cska_pinmux[1]}]
+set_case_analysis 0 [get_ports {cfg_cska_pinmux[2]}]
+set_case_analysis 0 [get_ports {cfg_cska_pinmux[3]}]
 
 set_case_analysis 0 [get_ports {scan_en}]
 set_case_analysis 0 [get_ports {scan_mode}]

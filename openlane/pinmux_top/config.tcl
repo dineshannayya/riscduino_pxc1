@@ -26,7 +26,7 @@ set ::env(FP_PDN_CORE_RING) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "mclk"
+set ::env(CLOCK_PORT) "mclk u_clkgen.u_mdio_ref_mux.u_mux_l10.X"
 
 set ::env(SYNTH_MAX_FANOUT) 4
 set ::env(SYNTH_BUFFERING) {0}
@@ -42,13 +42,14 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-        $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_skew_adjust.gv \
-        $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_skew_adjust.gv   \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv       \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/registers.v          \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_ctl.v            \
         $::env(DESIGN_DIR)/../../verilog/rtl/glbl/src/glbl_cfg.sv     \
-        $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux_top.sv     \
+        $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux_top.sv \
         $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux.sv     \
+        $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/clkgen.sv     \
 	"
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1

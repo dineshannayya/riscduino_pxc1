@@ -83,7 +83,9 @@ module glbl_cfg (
 
        // Outputs
         output logic [31:0]     reg_rdata,
-        output logic            reg_ack
+        output logic            reg_ack,
+
+        output logic [31:0]     cfg_mac_clk_ctrl
 
 
         );
@@ -104,6 +106,7 @@ logic  [31:0]   sw_reg_wdata;
 
 logic [31:0]    reg_0;            // Software_Reg 0
 logic [31:0]    reg_1;            // Software Reg 1
+logic [31:0]    reg_8;            // Software Reg 1
 logic [31:0]    reg_9;            // Software_Reg 9
 logic [31:0]    reg_10;           // Software Reg 10
 logic [31:0]    reg_11;           // Software Reg 11
@@ -169,6 +172,7 @@ begin
   case (sw_addr [3:0])
     4'b0000 :   reg_out [31:0] = reg_0;
     4'b0001 :   reg_out [31:0] = reg_1;
+    4'b1000 :   reg_out [31:0] = reg_8; // Software Reg1
     4'b1001 :   reg_out [31:0] = reg_9; // Software Reg1
     4'b1010 :   reg_out [31:0] = reg_10; // Software Reg2
     4'b1011 :   reg_out [31:0] = reg_11; // Software Reg3
@@ -273,6 +277,23 @@ generic_register #(8,8'hDD  ) u_reg1_be3 (
           );
 
 
+//---------------------------------------------
+// Reg-8: Mac clock control
+//---------------------------------------------
+gen_32b_reg  #(32'h0) u_reg_8	(
+	      //List of Inputs
+	      .reset_n    (reset_n       ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_8    ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_8       )
+	      );
+
+assign cfg_mac_clk_ctrl = reg_8;
+
 //-----------------------------------------
 // Software Reg-1 : ASCI Representation of LBST = 32'h4C66_8354
 // ----------------------------------------
@@ -291,7 +312,7 @@ gen_32b_reg  #(32'h4C66_8354) u_reg_9	(
 //-----------------------------------------
 // Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h1603_2022) u_reg_101	(
+gen_32b_reg  #(32'h1603_2022) u_reg_10	(
 	      //List of Inputs
 	      .reset_n    (reset_n       ),
 	      .clk        (mclk          ),

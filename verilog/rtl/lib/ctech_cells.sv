@@ -71,6 +71,28 @@ assign X = (S) ? A1 : A0;
 
 endmodule
 
+module ctech_mux4x1 (
+	input  logic       A00,
+	input  logic       A01,
+	input  logic       A10,
+	input  logic       A11,
+	input  logic [1:0] S ,
+	output logic  X);
+
+`ifndef SYNTHESIS
+assign X = (S == 2'b00) ? A00 : 
+           (S == 2'b01) ? A01 :
+           (S == 2'b10) ? A10 :
+           (S == 2'b11) ? A11 : 'h0;
+`else 
+     logic X0,X1;
+     sky130_fd_sc_hd__mux2_4 u_mux_l00 (.A0 (A00), .A1 (A01), .S  (S[0]), .X (X0));
+     sky130_fd_sc_hd__mux2_4 u_mux_l01 (.A0 (A10), .A1 (A11), .S  (S[0]), .X (X1));
+     sky130_fd_sc_hd__mux2_4 u_mux_l10 (.A0 (X0),  .A1 (X1),  .S  (S[1]), .X (X));
+`endif
+
+endmodule
+
 module ctech_buf (
 	input  logic A,
 	output logic X);

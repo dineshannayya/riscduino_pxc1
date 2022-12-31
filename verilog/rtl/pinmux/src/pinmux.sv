@@ -21,7 +21,7 @@ module pinmux(
     //-----------------------------------------------------------------------
     // MDIO Signal
     //-----------------------------------------------------------------------
-    output  logic	   mdio_clk        ,
+    input  logic	   mdio_clk        ,
     output  logic      mdio_in         ,
     input   logic      mdio_out_en     ,
     input   logic      mdio_out        ,
@@ -102,7 +102,7 @@ begin
     mac_rxd[3]= io_in[19];
 
     // digital_io[20]  - MAC-MDIC
-    mdio_clk   = io_in[20];
+    //mdio_clk   = io_in[20];
 
     // digital_io[21]  - MAC-MDID
     mdio_in    = io_in[21];
@@ -137,6 +137,9 @@ begin
     io_out[11] = mac_txd[3];
 
    
+    // digital_io[20]  - MAC-MDIC
+    io_out[20] = mdio_clk;
+
    // digital_io[21]  - MAC-MDID
     io_out[21] = mdio_out;
 

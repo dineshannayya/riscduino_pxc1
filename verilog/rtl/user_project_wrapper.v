@@ -385,6 +385,26 @@ wire [3:0] cfg_cska_mac      = cfg_clk_ctrl1[27:24];
 wire   cfg_mem_lphase        = cfg_clk_ctrl1[31]; // SRAM data lanuch phase selection
 
 
+//----------------------------------------------------------
+// Bus Repeater Initiatiation
+//----------------------------------------------------------
+wire  [37:0]                io_in_rp           ;
+wire  [37:0]                io_in_rp1          ;
+wire  [37:0]                io_in_rp2          ;
+wire  [37:0]                io_out_int         ;
+wire  [37:0]                io_oeb_int         ;
+wire  [37:0]                io_out_rp1         ;
+wire  [37:0]                io_oeb_rp1         ;
+wire                        user_clock2_rp     ;
+wire [127:0]                la_data_out_int    ;
+
+`include "bus_repeater.sv"
+
+/***********************************************
+ Wishbone HOST
+*************************************************/
+
+
 wb_host 
    #(
      `ifndef SYNTHESIS
@@ -401,62 +421,62 @@ wb_host
           .user_irq           (user_irq                     ),
 
     // Master Port
-          .wbm_rst_i          (wb_rst_i                     ),  
-          .wbm_clk_i          (wb_clk_i                     ),  
-          .wbm_cyc_i          (wbs_cyc_i                    ),  
-          .wbm_stb_i          (wbs_stb_i                    ),  
-          .wbm_adr_i          (wbs_adr_i                    ),  
-          .wbm_we_i           (wbs_we_i                     ),  
-          .wbm_dat_i          (wbs_dat_i                    ),  
-          .wbm_sel_i          (wbs_sel_i                    ),  
-          .wbm_dat_o          (wbs_dat_o                    ),  
-          .wbm_ack_o          (wbs_ack_o                    ),  
-          .wbm_err_o          (                             ),  
+          .wbm_rst_i               (wb_rst_i_rp             ),  
+          .wbm_clk_i               (wb_clk_i_rp             ),  
+          .wbm_cyc_i               (wbs_cyc_i_rp            ),  
+          .wbm_stb_i               (wbs_stb_i_rp            ),  
+          .wbm_adr_i               (wbs_adr_i_rp            ),  
+          .wbm_we_i                (wbs_we_i_rp             ),  
+          .wbm_dat_i               (wbs_dat_i_rp            ),  
+          .wbm_sel_i               (wbs_sel_i_rp            ),  
+          .wbm_dat_o               (wbs_dat_int_o           ),  
+          .wbm_ack_o               (wbs_ack_int_o           ),  
+          .wbm_err_o               (                        ),  
 
     // Clock Skeq Adjust
-          .wbd_clk_int        (wbd_clk_int                  ),
-          .wbd_clk_wh         (wbd_clk_wh                   ),  
-          .cfg_cska_wh        (cfg_cska_wh                  ),
+          .wbd_clk_int             (wbd_clk_int             ),
+          .wbd_clk_wh              (wbd_clk_wh              ),  
+          .cfg_cska_wh             (cfg_cska_wh             ),
 
     // Clock Skeq Adjust
-          .lbist_clk_int      (lbist_clk                    ),
-          .lbist_clk_out      (lbist_clk                    ),  
-          .cfg_cska_lbist     (cfg_cska_lbist               ),
+          .lbist_clk_int           (lbist_clk               ),
+          .lbist_clk_out           (lbist_clk               ),  
+          .cfg_cska_lbist          (cfg_cska_lbist          ),
 
     // Slave Port
-          .wbs_clk_out        (wbd_clk_int                  ),
-          .wbs_clk_i          (wbd_clk_wh                   ),  
-          .wbs_cyc_o          (wbd_int_cyc_i                ),  
-          .wbs_stb_o          (wbd_int_stb_i                ),  
-          .wbs_adr_o          (wbd_int_adr_i                ),  
-          .wbs_we_o           (wbd_int_we_i                 ),  
-          .wbs_dat_o          (wbd_int_dat_i                ),  
-          .wbs_sel_o          (wbd_int_sel_i                ),  
-          .wbs_dat_i          (wbd_int_dat_o                ),  
-          .wbs_ack_i          (wbd_int_ack_o                ),  
-          .wbs_err_i          (wbd_int_err_o                ),  
+          .wbs_clk_out             (wbd_clk_int             ),
+          .wbs_clk_i               (wbd_clk_wh              ),  
+          .wbs_cyc_o               (wbd_int_cyc_i           ),  
+          .wbs_stb_o               (wbd_int_stb_i           ),  
+          .wbs_adr_o               (wbd_int_adr_i           ),  
+          .wbs_we_o                (wbd_int_we_i            ),  
+          .wbs_dat_o               (wbd_int_dat_i           ),  
+          .wbs_sel_o               (wbd_int_sel_i           ),  
+          .wbs_dat_i               (wbd_int_dat_o           ),  
+          .wbs_ack_i               (wbd_int_ack_o           ),  
+          .wbs_err_i               (wbd_int_err_o           ),  
 
-          .cfg_clk_ctrl1      (cfg_clk_ctrl1                ),
-          .cfg_clk_ctrl2      (cfg_clk_ctrl2                ),
+          .cfg_clk_ctrl1           (cfg_clk_ctrl1           ),
+          .cfg_clk_ctrl2           (cfg_clk_ctrl2           ),
 
-          .mac_rst_n          (mac_rst_n                    ),
-          .bist_rst_n         (bist_rst_n                   ),
-          .wbd_int_rst_n      (wbd_int_rst_n                ),
+          .mac_rst_n               (mac_rst_n               ),
+          .bist_rst_n              (bist_rst_n              ),
+          .wbd_int_rst_n           (wbd_int_rst_n           ),
 
-          .la_data_in         (la_data_in[35:0]             ),
-          .la_data_out        (la_data_out                  ),
+          .la_data_in              (la_data_in_rp[35:0]     ),
+          .la_data_out             (la_data_out_int         ),
 
-          .uartm_rxd          (uartm_rxd                    ),
-          .uartm_txd          (uartm_txd                    ),
+          .uartm_rxd               (uartm_rxd               ),
+          .uartm_txd               (uartm_txd               ),
 
 
 	// Scan Control Signal
-          .scan_clk           (scan_clk                     ),
-          .scan_rst_n         (scan_rst_n                   ),
-          .scan_mode          (scan_mode                    ),
-          .scan_en            (scan_en                      ),
-          .scan_in            (scan_in                      ),
-          .scan_out           (scan_so_mac                  )
+          .scan_clk                (scan_clk                     ),
+          .scan_rst_n              (scan_rst_n                   ),
+          .scan_mode               (scan_mode                    ),
+          .scan_en                 (scan_en                      ),
+          .scan_in                 (scan_in                      ),
+          .scan_out                (scan_so_mac                  )
 
     );
 
@@ -662,9 +682,9 @@ pinmux_top #(
           //-------------------------------------
           // Caravel IO I/F
           //-------------------------------------
-          .io_in              (io_in                        ),
-          .io_out             (io_out                       ),
-          .io_oeb             (io_oeb                       )
+          .io_in              (io_in_rp                     ),
+          .io_out             (io_out_int                   ),
+          .io_oeb             (io_oeb_int                   )
 
 
     );

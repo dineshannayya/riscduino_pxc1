@@ -71,6 +71,10 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
 	    $::env(DESIGN_DIR)/../../verilog/gl/pinmux_top.v\
 	    $::env(DESIGN_DIR)/../../verilog/gl/mbist_wrapper.v\
 	    $::env(DESIGN_DIR)/../../verilog/gl/mac_wrapper.v\
+	    $::env(DESIGN_DIR)/../../verilog/gl/bus_rep_south.v \
+	    $::env(DESIGN_DIR)/../../verilog/gl/bus_rep_north.v \
+	    $::env(DESIGN_DIR)/../../verilog/gl/bus_rep_east.v \
+	    $::env(DESIGN_DIR)/../../verilog/gl/bus_rep_west.v \
 	"
 
 set ::env(EXTRA_LEFS) "\
@@ -80,7 +84,12 @@ set ::env(EXTRA_LEFS) "\
 	$::env(DESIGN_DIR)/../../lef/mbist_wrapper.lef \
 	$::env(DESIGN_DIR)/../../lef/mac_wrapper.lef \
 	$::env(DESIGN_DIR)/../../lef/wb_interconnect.lef \
-	$::env(DESIGN_DIR)/../../lef/wb_host.lef"
+	$::env(DESIGN_DIR)/../../lef/wb_host.lef\
+	$::env(DESIGN_DIR)/../../lef/bus_rep_south.lef \
+	$::env(DESIGN_DIR)/../../lef/bus_rep_north.lef \
+	$::env(DESIGN_DIR)/../../lef/bus_rep_east.lef \
+	$::env(DESIGN_DIR)/../../lef/bus_rep_west.lef \
+    "
 
 set ::env(EXTRA_GDS_FILES) "\
 	$::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
@@ -89,7 +98,12 @@ set ::env(EXTRA_GDS_FILES) "\
 	$::env(DESIGN_DIR)/../../gds/mbist_wrapper.gds \
 	$::env(DESIGN_DIR)/../../gds/mac_wrapper.gds \
 	$::env(DESIGN_DIR)/../../gds/wb_interconnect.gds \
-	$::env(DESIGN_DIR)/../../gds/wb_host.gds"
+	$::env(DESIGN_DIR)/../../gds/wb_host.gds \
+	$::env(DESIGN_DIR)/../../gds/bus_rep_south.gds \
+	$::env(DESIGN_DIR)/../../gds/bus_rep_north.gds \
+	$::env(DESIGN_DIR)/../../gds/bus_rep_east.gds \
+	$::env(DESIGN_DIR)/../../gds/bus_rep_west.gds \
+    "
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
@@ -176,7 +190,11 @@ set ::env(FP_PDN_MACRO_HOOKS) "\
      u_sram4_2kb       vccd1 vssd1 vccd1 vssd1,\
      u_sram5_2kb       vccd1 vssd1 vccd1 vssd1,\
      u_sram6_2kb       vccd1 vssd1 vccd1 vssd1,\
-     u_sram7_2kb       vccd1 vssd1 vccd1 vssd1\
+     u_sram7_2kb       vccd1 vssd1 vccd1 vssd1,\
+	 u_rp_south         vccd1 vssd1 vccd1 vssd1,\
+	 u_rp_north         vccd1 vssd1 vccd1 vssd1,\
+	 u_rp_east          vccd1 vssd1 vccd1 vssd1,\
+	 u_rp_west          vccd1 vssd1 vccd1 vssd1\
      "
 
 
