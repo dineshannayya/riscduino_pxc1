@@ -62,7 +62,7 @@ module mbist_wb
 
     // Reg Interface
 	output  logic                          reg_cs,
-	output  logic [4:0]                    reg_addr,
+	output  logic [3:0]                    reg_addr,
 	output  logic [31:0]                   reg_wdata,
 	output  logic                          reg_wr,
 	output  logic [3:0]                    reg_be,
@@ -126,13 +126,13 @@ always @(negedge rst_n, posedge wb_clk_i) begin
 	       if(wb_stb_i && wb_adr_i[14:12] == 3'b0 && wb_bry_i && ~wb_we_i && !wb_lack_o) begin
            // REG READ
               reg_cs       <= 'b1;
-	          reg_addr     <=  wb_adr_i[4:0];
+	          reg_addr     <=  wb_adr_i[3:0];
 		      reg_wr       <=  'b0;
 	          state        <=  REG_ACTION;
 	       end else if(wb_stb_i && wb_adr_i[14:12] == 3'b0 && wb_bry_i && wb_we_i && !wb_lack_o) begin
            // REG WRITE
               reg_cs       <= 'b1;
-	          reg_addr     <=  wb_adr_i[4:0];
+	          reg_addr     <=  wb_adr_i[3:0];
 		      reg_wr       <=  'b1;
               reg_be       <=  wb_sel_i;
               reg_wdata    <=  wb_dat_i;

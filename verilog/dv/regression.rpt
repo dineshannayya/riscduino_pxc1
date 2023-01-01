@@ -2,4 +2,6 @@
 Monitor: user_mac_test1_tb (RTL) Passed
 Monitor: user_mbist_test1_tb (RTL) Passed
 Monitor: user_mbist_test2_tb (RTL) Passed
+Monitor: user_uart_master_tb (RTL) Passed
+Monitor: user_spi_isp_tb (RTL) Passed
 ################# End of Test case Summary #####################

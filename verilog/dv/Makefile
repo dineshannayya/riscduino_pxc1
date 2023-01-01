@@ -19,7 +19,7 @@
 .SUFFIXES:
 .SILENT: clean all
 
-PATTERNS = user_mac_test1 user_mbist_test1 user_mbist_test2
+PATTERNS = user_mac_test1 user_mbist_test1 user_mbist_test2 user_uart_master user_spi_isp
 
 all:  ${PATTERNS}
 	echo "################# RTL Test case Summary #####################" > regression.rpt

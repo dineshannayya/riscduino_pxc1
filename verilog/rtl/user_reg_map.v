@@ -37,9 +37,12 @@
 //  GLBL Register
 //-------------------------------------------------
 
-`define GLBL_BIST_SOFT1    'h24
-`define GLBL_BIST_SOFT2    'h28
-`define GLBL_BIST_SOFT3    'h2C
+`define GLBL_CFG_SOFT_REG_0    'h00
+`define GLBL_CFG_SOFT_REG_1    'h04
+`define GLBL_CFG_SOFT_REG_2    'h08
+`define GLBL_CFG_SOFT_REG_3    'h0C
+`define GLBL_CFG_SOFT_REG_4    'h10
+`define GLBL_CFG_SOFT_REG_5    'h14
 
 //-------------------------------------------------
 //  MBIST Register

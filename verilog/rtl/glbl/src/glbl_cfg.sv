@@ -106,6 +106,10 @@ logic  [31:0]   sw_reg_wdata;
 
 logic [31:0]    reg_0;            // Software_Reg 0
 logic [31:0]    reg_1;            // Software Reg 1
+logic [31:0]    reg_2;            // Software Reg 1
+logic [31:0]    reg_3;            // Software Reg 1
+logic [31:0]    reg_4;            // Software Reg 1
+logic [31:0]    reg_5;            // Software Reg 1
 logic [31:0]    reg_8;            // Software Reg 1
 logic [31:0]    reg_9;            // Software_Reg 9
 logic [31:0]    reg_10;           // Software Reg 10
@@ -172,6 +176,10 @@ begin
   case (sw_addr [3:0])
     4'b0000 :   reg_out [31:0] = reg_0;
     4'b0001 :   reg_out [31:0] = reg_1;
+    4'b0010 :   reg_out [31:0] = reg_2;
+    4'b0011 :   reg_out [31:0] = reg_3;
+    4'b0100 :   reg_out [31:0] = reg_4;
+    4'b0101 :   reg_out [31:0] = reg_5;
     4'b1000 :   reg_out [31:0] = reg_8; // Software Reg1
     4'b1001 :   reg_out [31:0] = reg_9; // Software Reg1
     4'b1010 :   reg_out [31:0] = reg_10; // Software Reg2
@@ -187,95 +195,94 @@ end
 //-----------------------------------------------------------------------
 //   reg-0
 //   -----------------------------------------------------------------
-generic_register #(8,8'h11  ) u_reg0_be0 (
-	      .we            ({8{sw_wr_en_0 & 
-                                 wr_be[0]   }}  ),		 
-	      .data_in       (sw_reg_wdata[7:0]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
+gen_32b_reg  #(0) u_reg_0	(
+	      //List of Inputs
+	      .reset_n    (reset_n       ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_0    ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
 	      
 	      //List of Outs
-	      .data_out      (reg_0[7:0]        )
-          );
+	      .data_out   (reg_0       )
+	      );
 
-generic_register #(8,8'h22  ) u_reg0_be1 (
-	      .we            ({8{sw_wr_en_0 & 
-                                 wr_be[1]   }}  ),		 
-	      .data_in       (sw_reg_wdata[15:8]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_0[15:8]        )
-          );
-generic_register #(8,8'h33  ) u_reg0_be2 (
-	      .we            ({8{sw_wr_en_0 & 
-                                 wr_be[2]   }}  ),		 
-	      .data_in       (sw_reg_wdata[23:16]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_0[23:16]        )
-          );
-
-generic_register #(8,8'h44  ) u_reg0_be3 (
-	      .we            ({8{sw_wr_en_0 & 
-                                 wr_be[3]   }}  ),		 
-	      .data_in       (sw_reg_wdata[31:24]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_0[31:24]        )
-          );
-
-//-----------------------------------------------------------------------
+//-----------------------------------------------------------------
 //   reg-1
+//-----------------------------------------------------------------
+
+gen_32b_reg  #(0) u_reg_1	(
+	      //List of Inputs
+	      .reset_n    (reset_n       ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_1    ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_1       )
+	      );
+
+//-----------------------------------------------------------------
+//   reg-2
+//-----------------------------------------------------------------
+
+gen_32b_reg  #(0) u_reg_2	(
+	      //List of Inputs
+	      .reset_n    (reset_n       ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_2    ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_2       )
+	      );
+//-----------------------------------------------------------------
+//   reg-3
+//-----------------------------------------------------------------
+
+gen_32b_reg  #(0) u_reg_3	(
+	      //List of Inputs
+	      .reset_n    (reset_n       ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_3    ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_3       )
+	      );
+//-----------------------------------------------------------------
+//   reg-4
+//-----------------------------------------------------------------
+
+gen_32b_reg  #(0) u_reg_4	(
+	      //List of Inputs
+	      .reset_n    (reset_n       ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_4    ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_4       )
+	      );
+//-----------------------------------------------------------------------
+//   reg-5
 //   -----------------------------------------------------------------
-generic_register #(8,8'hAA  ) u_reg1_be0 (
-	      .we            ({8{sw_wr_en_1 & 
-                                 wr_be[0]   }}  ),		 
-	      .data_in       (sw_reg_wdata[7:0]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_1[7:0]        )
-          );
 
-generic_register #(8,8'hBB  ) u_reg1_be1 (
-	      .we            ({8{sw_wr_en_1 & 
-                                 wr_be[1]   }}  ),		 
-	      .data_in       (sw_reg_wdata[15:8]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
+gen_32b_reg  #(0) u_reg_5	(
+	      //List of Inputs
+	      .reset_n    (reset_n       ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_5    ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
 	      
 	      //List of Outs
-	      .data_out      (reg_1[15:8]        )
-          );
-generic_register #(8,8'hCC  ) u_reg1_be2 (
-	      .we            ({8{sw_wr_en_1 & 
-                                 wr_be[2]   }}  ),		 
-	      .data_in       (sw_reg_wdata[23:16]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_1[23:16]        )
-          );
-
-generic_register #(8,8'hDD  ) u_reg1_be3 (
-	      .we            ({8{sw_wr_en_1 & 
-                                 wr_be[3]   }}  ),		 
-	      .data_in       (sw_reg_wdata[31:24]    ),
-	      .reset_n       (reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_1[31:24]        )
-          );
-
+	      .data_out   (reg_5       )
+	      );
 
 //---------------------------------------------
 // Reg-8: Mac clock control
@@ -295,7 +302,7 @@ gen_32b_reg  #(32'h0) u_reg_8	(
 assign cfg_mac_clk_ctrl = reg_8;
 
 //-----------------------------------------
-// Software Reg-1 : Signature
+// Reg-9 : Signature
 // ----------------------------------------
 gen_32b_reg  #(CHIP_SIGNATURE) u_reg_9	(
 	      //List of Inputs
@@ -310,7 +317,7 @@ gen_32b_reg  #(CHIP_SIGNATURE) u_reg_9	(
 	      );
 
 //-----------------------------------------
-// Software Reg-2, Release date: <DAY><MONTH><YEAR>
+// Reg-10, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
 gen_32b_reg  #(CHIP_RELEASE_DATE) u_reg_10	(
 	      //List of Inputs
@@ -325,7 +332,7 @@ gen_32b_reg  #(CHIP_RELEASE_DATE) u_reg_10	(
 	      );
 
 //-----------------------------------------
-// Software Reg-3: Poject Revison 1.6 = 0001600
+// Reg-11: Poject Revison 1.6 = 0001600
 // ----------------------------------------
 gen_32b_reg  #(CHIP_REVISION) u_reg_11	(
 	      //List of Inputs

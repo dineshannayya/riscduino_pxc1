@@ -102,6 +102,15 @@ module pinmux_top #(parameter SCW = 8   // SCAN CHAIN WIDTH
     //-------------------------------------
     output  logic      uartm_rxd       ,
     input   logic      uartm_txd       ,
+ 
+    //-------------------------------------
+    // SPI SLAVE
+    //-------------------------------------
+    output   logic     spis_sck,
+    output   logic     spis_ssn,
+    input    logic     spis_miso,
+    output   logic     spis_mosi,
+
 
     //-------------------------------------
     // External IO
@@ -240,6 +249,15 @@ pinmux u_pinmux(
     //-------------------------------------
     .uartm_rxd              (uartm_rxd   ),
     .uartm_txd              (uartm_txd   ),
+
+    //-------------------------------------
+    // SPI SLAVE
+    //-------------------------------------
+     .spis_sck              (spis_sck            ),
+     .spis_ssn              (spis_ssn            ),
+     .spis_miso             (spis_miso           ),
+     .spis_mosi             (spis_mosi           ),
+
 
     //-------------------------------------
     // External IO

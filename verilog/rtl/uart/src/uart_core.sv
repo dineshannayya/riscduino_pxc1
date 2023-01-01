@@ -38,6 +38,9 @@
 ////    0.2 - 25th June 2021, Dinesh A                            ////
 ////        Pad logic moved inside core to avoid combo logic at   ////
 ////        soc digital core level                                ////
+////    0.3 - 20th Dec 2022, Dinesh A                             ////
+////        changed the async fifo mode to FAST mode to handle    ////
+////        any back-to back read case                            ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -185,12 +188,14 @@ uart_cfg u_cfg (
 
 //##############################################################
 // 16x Baud clock generation
+//  Baud Rate config = (F_CPU / (BAUD * 16)) - 2 
 // Example: to generate 19200 Baud clock from 50Mhz Link clock
-//    50 * 1000 * 1000 / (2 + cfg_baud_16x) = 19200 * 16
+//    cfg_baud_16x = ((50 * 1000 * 1000) / (19200 * 16)) - 2
 //    cfg_baud_16x = 0xA0 (160)
 //###############################################################
 
 wire line_clk_16x_in;
+wire line_clk_16x;
 
 // OpenSource CTS tool does not work with buffer as source point
 // changed buf to max with select tied=0

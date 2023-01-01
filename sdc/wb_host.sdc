@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Sat Dec 31 06:48:36 2022
+# Sun Jan  1 15:48:40 2023
 ###############################################################################
 current_design wb_host
 ###############################################################################
@@ -687,6 +687,8 @@ set_load -pin_load 0.0334 [get_ports {scan_clk}]
 set_load -pin_load 0.0334 [get_ports {scan_en}]
 set_load -pin_load 0.0334 [get_ports {scan_mode}]
 set_load -pin_load 0.0334 [get_ports {scan_rst_n}]
+set_load -pin_load 0.0334 [get_ports {sdout}]
+set_load -pin_load 0.0334 [get_ports {sdout_oen}]
 set_load -pin_load 0.0334 [get_ports {uartm_txd}]
 set_load -pin_load 0.0334 [get_ports {wbd_clk_wh}]
 set_load -pin_load 0.0334 [get_ports {wbd_int_rst_n}]
@@ -1000,6 +1002,9 @@ set_load -pin_load 0.0334 [get_ports {wbs_sel_o[2]}]
 set_load -pin_load 0.0334 [get_ports {wbs_sel_o[1]}]
 set_load -pin_load 0.0334 [get_ports {wbs_sel_o[0]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {lbist_clk_int}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {sclk}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {sdin}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ssn}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {uartm_rxd}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {user_clock1}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {user_clock2}]

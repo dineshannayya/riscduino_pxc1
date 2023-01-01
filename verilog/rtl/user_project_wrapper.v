@@ -331,6 +331,12 @@ wire                          scan_mode_mac       ;
 wire                          scan_en_mac         ;
 wire [SCW-1:0]                scan_so_mac         ;
 
+// SPIS I/F
+wire                           sspis_sck                              ; // clock out
+wire                           sspis_so                               ; // serial data out
+wire                           sspis_si                               ; // serial data in
+wire                           sspis_ssn                              ; // cs_n
+
 
 //-----------------------------------------------------------------------
 // MAC Line-Tx Signal
@@ -474,6 +480,11 @@ wb_host
           .uartm_rxd               (uartm_rxd               ),
           .uartm_txd               (uartm_txd               ),
 
+          .sclk                    (sspis_sck               ),
+          .ssn                     (sspis_ssn               ),
+          .sdin                    (sspis_si                ),
+          .sdout                   (sspis_so                ),
+          .sdout_oen               (                        ),
 
 	// Scan Control Signal
           .scan_clk                (scan_clk                     ),
@@ -683,6 +694,16 @@ pinmux_top #(
           //-------------------------------------
           .uartm_rxd          (uartm_rxd                    ),
           .uartm_txd          (uartm_txd                    ),
+
+          //-------------------------------------
+          // SPI SLAVE
+          //-------------------------------------
+
+          .spis_sck           (sspis_sck                    ),
+          .spis_ssn           (sspis_ssn                    ),
+          .spis_miso          (sspis_so                     ),
+          .spis_mosi          (sspis_si                     ),
+
 
           //-------------------------------------
           // Caravel IO I/F

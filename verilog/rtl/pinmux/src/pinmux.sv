@@ -1,9 +1,46 @@
+//////////////////////////////////////////////////////////////////////////////
+// SPDX-FileCopyrightText: 2021 , Dinesh Annayya                          
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileContributor: Created by Dinesh Annayya <dinesha@opencores.org>
+//
+//////////////////////////////////////////////////////////////////////
+////                                                              ////
+////  Pinmux                                                      ////
+////                                                              ////
+////                                                              ////
+////  Description                                                 ////
+////      Manages all the pin multiplexing                        ////
+////                                                              ////
+////  To Do:                                                      ////
+////    nothing                                                   ////
+////                                                              ////
+////  Author(s):                                                  ////
+////      - Dinesh Annayya, dinesha@opencores.org                 ////
+////                                                              ////
+////  Revision :                                                  ////
+////    0.1 - 01th Jan 2022, Dinesh A                             ////
+////          Seperated the pinmux from pinmux_top module         ////
+////          SSPI Slave Integrated
+//////////////////////////////////////////////////////////////////////
+
 module pinmux(
 
     //-----------------------------------------------------------------------
     // MAC-Tx Signal
     //-----------------------------------------------------------------------
-    output logic	     mac_tx_clk     ,
+    output logic	  mac_tx_clk     ,
     input  logic         mac_tx_en      ,
     input  logic         mac_tx_er      ,
     input  logic [7:0]   mac_txd        ,
@@ -14,7 +51,7 @@ module pinmux(
     output  logic	    mac_rx_clk     ,
     output  logic	    mac_rx_er      ,
     output  logic	    mac_rx_dv      ,
-    output  logic [7:0] mac_rxd        ,
+    output  logic [7:0]    mac_rxd        ,
     output  logic	    mac_crs        ,
                    
                    
@@ -22,15 +59,23 @@ module pinmux(
     // MDIO Signal
     //-----------------------------------------------------------------------
     input  logic	   mdio_clk        ,
-    output  logic      mdio_in         ,
-    input   logic      mdio_out_en     ,
-    input   logic      mdio_out        ,
+    output  logic         mdio_in         ,
+    input   logic         mdio_out_en     ,
+    input   logic         mdio_out        ,
 
     //-------------------------------------
     // Master UART TXD
     //-------------------------------------
     output  logic      uartm_rxd       ,
     input   logic      uartm_txd       ,
+
+    //-------------------------------------
+    // SPI SLAVE
+    //-------------------------------------
+     output   logic    spis_sck,
+     output   logic    spis_ssn,
+     input    logic    spis_miso,
+     output   logic    spis_mosi,
 
     //-------------------------------------
     // External IO
@@ -62,6 +107,12 @@ module pinmux(
    digital_io[19]  - MAC-RX_DATA[3]   -   IN
    digital_io[20]  - MAC-MDIC         -   OUT
    digital_io[21]  - MAC-MDID         -   IO
+
+   digital_io[22]  - SSN              -   IN
+   digital_io[23]  - MOSI             -   IN
+   digital_io[24]  - MISO             -   OUT
+   digital_io[25]  - SCK              -   IN                       
+
 
    digital_io[35] -  UARTM-TXD        -   OUT
    digital_io[36] -  UARTM-RXD        -   IN
@@ -107,6 +158,15 @@ begin
     // digital_io[21]  - MAC-MDID
     mdio_in    = io_in[21];
 
+    //digital_io[22]  - SSN              -   IN
+    spis_ssn   = io_in[22];
+   
+   //digital_io[23]  - MOSI             -   IN
+    spis_mosi = io_in[23];
+   
+   //digital_io[25]  - SCK              -   IN                       
+    spis_sck = io_in[25];
+
     // digital_io[36] -  UARTM-RXD
     uartm_rxd = io_in[36];
 
@@ -142,6 +202,10 @@ begin
 
    // digital_io[21]  - MAC-MDID
     io_out[21] = mdio_out;
+
+  
+   // digital_io[24]  - MISO             -   OUT
+    io_out[24] = spis_miso;
 
    // digital_io[35] -  UARTM-TXD
      io_out[35] = uartm_txd;
@@ -202,6 +266,19 @@ begin
 
    //digital_io[21]  - MAC-MDID         -   IO
    io_oeb[21] = mdio_out_en;
+
+  
+   //digital_io[22]  - SSN              -   IN
+   io_oeb[22] = 1'b1;
+
+   //digital_io[23]  - MOSI             -   IN
+   io_oeb[23] = 1'b1;
+
+   //digital_io[24]  - MISO             -   OUT
+   io_oeb[24] = 1'b0;
+
+   //digital_io[25]  - SCK              -   IN                       
+   io_oeb[25] = 1'b1;
 
    //digital_io[35] -  UARTM-TXD        -   OUT
    io_oeb[35] = 1'b0;
