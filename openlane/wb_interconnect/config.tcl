@@ -72,7 +72,7 @@ set ::env(SCAN_TOTAL_CHAINS) 8
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 200 1500"
+set ::env(DIE_AREA) "0 0 200 1600"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -82,8 +82,8 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.22"
-#set ::env(CELL_PAD) "8"
+set ::env(PL_TARGET_DENSITY) "0.16"
+set ::env(CELL_PAD) "12"
 
 ## Routing
 set ::env(GRT_ADJUSTMENT) 0.2
