@@ -48,6 +48,8 @@
 ////    1.0 - 31th Dec 2022, Dinesh A                             ////
 ////          A. Bus repeater added                               ////
 ////          B. Glbl Register added with signature/revison       ////
+////          C. SSPI Slave Integrated                            ////
+////          D. Uart Master with Auto Baud Detect Logic          ////
 //////////////////////////////////////////////////////////////////////
 `default_nettype none
 
