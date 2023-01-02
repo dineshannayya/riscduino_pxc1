@@ -180,10 +180,10 @@ begin
     4'b0011 :   reg_out [31:0] = reg_3;
     4'b0100 :   reg_out [31:0] = reg_4;
     4'b0101 :   reg_out [31:0] = reg_5;
-    4'b1000 :   reg_out [31:0] = reg_8; // Software Reg1
-    4'b1001 :   reg_out [31:0] = reg_9; // Software Reg1
-    4'b1010 :   reg_out [31:0] = reg_10; // Software Reg2
-    4'b1011 :   reg_out [31:0] = reg_11; // Software Reg3
+    4'b1000 :   reg_out [31:0] = reg_8; // Mac clock control
+    4'b1001 :   reg_out [31:0] = reg_9;  // Chip Signature
+    4'b1010 :   reg_out [31:0] = reg_10; // Chip Release Date
+    4'b1011 :   reg_out [31:0] = reg_11; // Chip Version
     default : reg_out [31:0] = 'h0;
   endcase
 end

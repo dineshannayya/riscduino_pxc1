@@ -423,19 +423,14 @@ wire         wb_ack_o1   = (wb_reg_sel) ? wb_reg_ack   : (lbist_reg_sel) ? lbist
 wire         wb_err_o1   = (wb_reg_sel) ? 1'b0         : (lbist_reg_sel) ? lbist_reg_err   : wb_err_int;  // error
 
 logic wb_req;
-// Hold fix for STROBE
-wire  wb_stb_d1,wb_stb_d2,wb_stb_d3;
-ctech_delay_buf u_delay1_stb0 (.X(wb_stb_d1),.A(wb_stb_i));
-ctech_delay_buf u_delay2_stb1 (.X(wb_stb_d2),.A(wb_stb_d1));
-ctech_delay_buf u_delay2_stb2 (.X(wb_stb_d3),.A(wb_stb_d2));
 always_ff @(negedge wbm_rst_n or posedge wbm_clk_i) begin
     if ( wbm_rst_n == 1'b0 ) begin
         wb_req    <= '0;
-	wb_dat_o <= '0;
-	wb_ack_o <= '0;
-	wb_err_o <= '0;
+	    wb_dat_o <= '0;
+	    wb_ack_o <= '0;
+	    wb_err_o <= '0;
    end else begin
-       wb_req   <= wb_stb_d3 && ((wb_ack_o == 0) && (wb_ack_o1 == 0)) ;
+       wb_req   <= wb_stb_i && ((wb_ack_o == 0) && (wb_ack_o1 == 0)) ;
        wb_ack_o <= wb_ack_o1;
        wb_err_o <= wb_err_o1;
        if(wb_ack_o1) // Keep last data in the bus
