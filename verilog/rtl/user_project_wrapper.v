@@ -50,6 +50,8 @@
 ////          B. Glbl Register added with signature/revison       ////
 ////          C. SSPI Slave Integrated                            ////
 ////          D. Uart Master with Auto Baud Detect Logic          ////
+////    1.1 - 3  Jan 2023, Dinesh A                               ////
+////          A. Stepper Motor Integrated                         ////
 //////////////////////////////////////////////////////////////////////
 `default_nettype none
 

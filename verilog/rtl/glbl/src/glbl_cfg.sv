@@ -77,7 +77,7 @@ module glbl_cfg (
         // Reg Bus Interface Signal
         input logic             reg_cs,
         input logic             reg_wr,
-        input logic [7:0]       reg_addr,
+        input logic [5:0]       reg_addr,
         input logic [31:0]      reg_wdata,
         input logic [3:0]       reg_be,
 

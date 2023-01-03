@@ -7,4 +7,5 @@ Monitor: user_spi_isp_tb (RTL) Passed
 Monitor: wb_port_tb (RTL) Passed
 Monitor: uart_master_test1_tb (RTL) Passed
 Monitor: uart_master_test2_tb (RTL) Passed
+Monitor: step_motor_controller_tb (RTL) Passed
 ################# End of Test case Summary #####################

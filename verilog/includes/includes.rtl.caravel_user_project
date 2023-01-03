@@ -75,6 +75,15 @@ $(USER_PROJECT_VERILOG)/rtl/gmac/ctrl/eth_parser.v
 $(USER_PROJECT_VERILOG)/rtl/gmac/crc32/g_rx_crc32.v
 $(USER_PROJECT_VERILOG)/rtl/gmac/crc32/g_tx_crc32.v
 
+#Bus Repeater
+$(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_south.sv
+$(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_north.sv
+$(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_east.sv
+$(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_west.sv
+
+# Stepper Motor
+$(USER_PROJECT_VERILOG)/rtl/sm_ctrl/src/sm_ctrl.sv
+
 #COMMON FILES
 $(USER_PROJECT_VERILOG)/rtl/lib/clk_skew_adjust.gv 
 $(USER_PROJECT_VERILOG)/rtl/lib/ctech_cells.sv 
@@ -99,10 +108,7 @@ $(USER_PROJECT_VERILOG)/rtl/lib/wb_wr_mem2mem.v
 $(USER_PROJECT_VERILOG)/rtl/lib/g_dpath_ctrl.v
 $(USER_PROJECT_VERILOG)/rtl/lib/sync_wbb.sv
 $(USER_PROJECT_VERILOG)/rtl/lib/sync_fifo2.sv
+$(USER_PROJECT_VERILOG)/rtl/lib/prescaler.v
 
-$(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_south.sv
-$(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_north.sv
-$(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_east.sv
-$(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_west.sv
 
 $(USER_PROJECT_VERILOG)/rtl/user_project_wrapper.v

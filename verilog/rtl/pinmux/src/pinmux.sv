@@ -82,7 +82,15 @@ module pinmux(
     //-------------------------------------
     input   logic [37:0] io_in           ,
     output  logic [37:0] io_out          ,
-    output  logic [37:0] io_oeb
+    output  logic [37:0] io_oeb          ,
+    //-------------------------------------
+    // Stpper Motor outputs
+    //-------------------------------------
+    input   logic        sm_a1           ,  
+    input   logic        sm_a2           ,  
+    input   logic        sm_b1           ,  
+    input   logic        sm_b2              
+
 
 );
 
@@ -112,7 +120,10 @@ module pinmux(
    digital_io[23]  - MOSI             -   IN
    digital_io[24]  - MISO             -   OUT
    digital_io[25]  - SCK              -   IN                       
-
+   digital_io[26]  - sm_a1            -   OUT                       
+   digital_io[27]  - sm_a2            -   OUT                       
+   digital_io[28]  - sm_b1            -   OUT                       
+   digital_io[29]  - sm_b2            -   OUT                       
 
    digital_io[35] -  UARTM-TXD        -   OUT
    digital_io[36] -  UARTM-RXD        -   IN
@@ -207,6 +218,20 @@ begin
    // digital_io[24]  - MISO             -   OUT
     io_out[24] = spis_miso;
 
+   //digital_io[26]  - sm_a1            -   OUT                       
+   io_out[26]   = sm_a1;
+
+   // digital_io[27]  - sm_a2            -   OUT                       
+   io_out[27]   = sm_a2;
+
+   // digital_io[28]  - sm_b1            -   OUT                       
+   io_out[28]   = sm_b1;
+
+   // digital_io[29]  - sm_b2            -   OUT                       
+   io_out[29]   = sm_b2;
+
+
+
    // digital_io[35] -  UARTM-TXD
      io_out[35] = uartm_txd;
 end
@@ -279,6 +304,19 @@ begin
 
    //digital_io[25]  - SCK              -   IN                       
    io_oeb[25] = 1'b1;
+
+   //digital_io[26]  - sm_a1            -   OUT                       
+   io_oeb[26] = 1'b0;
+
+   //digital_io[27]  - sm_a2            -   OUT                       
+   io_oeb[27] = 1'b0;
+
+   //digital_io[28]  - sm_b1            -   OUT                       
+   io_oeb[28] = 1'b0;
+
+   //digital_io[29]  - sm_b2            -   OUT                       
+   io_oeb[29] = 1'b0;
+
 
    //digital_io[35] -  UARTM-TXD        -   OUT
    io_oeb[35] = 1'b0;

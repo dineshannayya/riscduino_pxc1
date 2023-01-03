@@ -32,6 +32,8 @@
 ////  Revision :                                                  ////
 ////    0.1 - 31th Dec 2022, Dinesh A                             ////
 ////          initial version                                     ////
+////    0.2 - 03 Jan 2023, Dinesh A                               ////
+////          Stepper Motor Integrated                            ////
 //////////////////////////////////////////////////////////////////////
 `include "user_params.svh"
 
@@ -119,12 +121,12 @@ module pinmux_top #(parameter SCW = 8   // SCAN CHAIN WIDTH
     output [37:0]      io_out          ,
     output [37:0]      io_oeb
 
-    
-
-
 
         );
 
+
+`define SEL_GLBL  2'b00
+`define SEL_SM    2'b01
 
 logic [1:0]  cfg_mac_tx_clk_sel;
 logic [1:0]  cfg_mac_rx_clk_sel;
@@ -133,7 +135,27 @@ logic [7:0]  cfg_mdio_clk_div_ratio;
 logic        pad_mac_tx_clk;
 logic        pad_mac_rx_clk;
 logic [31:0] cfg_mac_clk_ctrl;
+logic        reset_ssn;
 
+//----------------------------------------
+//  Register Response Path Mux
+//  --------------------------------------
+logic         reg_glbl_cs ;
+logic [31:0]  reg_glbl_rdata;
+logic         reg_glbl_ack;
+
+logic         reg_sm_cs ;
+logic [31:0]  reg_sm_rdata;
+logic         reg_sm_ack;
+
+
+//------------------------------
+// Stepper Motor Variable
+//------------------------------
+logic sm_a1              ;  
+logic sm_a2              ;  
+logic sm_b1              ;  
+logic sm_b2              ;  
 //-----------------------------------------------------------------------
 // Main code starts here
 //-----------------------------------------------------------------------
@@ -142,48 +164,54 @@ logic [31:0] cfg_mac_clk_ctrl;
 assign scan_en_o = scan_en;
 assign scan_mode_o = scan_mode;
 
-
-
-
-
-
+//--------------------------------------
 // wb_host clock skew control
+//--------------------------------------
 clk_skew_adjust u_skew_glbl
        (
 `ifdef USE_POWER_PINS
-               .vccd1      (vccd1                      ),// User area 1 1.8V supply
-               .vssd1      (vssd1                      ),// User area 1 digital ground
+          .vccd1              (vccd1              ),// User area 1 1.8V supply
+          .vssd1              (vssd1              ),// User area 1 digital ground
 `endif
-	       .clk_in     (wbd_clk_int                ), 
-	       .sel        (cfg_cska_pinmux            ), 
-	       .clk_out    (wbd_clk_skew               ) 
+          .clk_in             (wbd_clk_int        ), 
+          .sel                (cfg_cska_pinmux    ), 
+          .clk_out            (wbd_clk_skew       ) 
        );
 
+reset_sync  u_rst_sync (
+          .scan_mode          (1'b0               ),
+          .dclk               (mclk               ), // Destination clock domain
+          .arst_n             (reset_n            ), // active low async reset
+          .srst_n             (reset_ssn          )
+          );
 
-
+//--------------------------------------
+// Global Register
+//-------------------------------------
 glbl_cfg u_glbl(
 `ifdef USE_POWER_PINS
-          .vccd1              (vccd1                ),// User area 1 1.8V supply
-          .vssd1              (vssd1                ),// User area 1 digital ground
+          .vccd1              (vccd1              ),// User area 1 1.8V supply
+          .vssd1              (vssd1              ),// User area 1 digital ground
 `endif
 
-          .mclk               (mclk                 ),
-          .reset_n            (reset_n              ),
+          .mclk               (mclk               ),
+          .reset_n            (reset_ssn          ),
 
         // Reg Bus Interface Signal
-          .reg_cs             (reg_cs               ),
-          .reg_wr             (reg_wr               ),
-          .reg_addr           (reg_addr             ),
-          .reg_wdata          (reg_wdata            ),
-          .reg_be             (reg_be               ),
+          .reg_cs             (reg_glbl_cs        ),
+          .reg_wr             (reg_wr             ),
+          .reg_addr           (reg_addr[5:0]      ),
+          .reg_wdata          (reg_wdata          ),
+          .reg_be             (reg_be             ),
 
        // Outputs
-          .reg_rdata          (reg_rdata            ),
-          .reg_ack            (reg_ack              ),
+          .reg_rdata          (reg_glbl_rdata     ),
+          .reg_ack            (reg_glbl_ack       ),
 
-           .cfg_mac_clk_ctrl  (cfg_mac_clk_ctrl     )
+          .cfg_mac_clk_ctrl   (cfg_mac_clk_ctrl   )
 
     );
+
 
 
 assign cfg_mac_tx_clk_sel      = cfg_mac_clk_ctrl[1:0];
@@ -191,11 +219,42 @@ assign cfg_mac_rx_clk_sel      = cfg_mac_clk_ctrl[3:2];
 assign cfg_mac_mdio_refclk_sel = cfg_mac_clk_ctrl[5:4];
 assign cfg_mdio_clk_div_ratio  = cfg_mac_clk_ctrl[15:8];
 
+//-------------------------------------------------------
+// Stepper Motor Controller
+//-------------------------------------------------------
+
+sm_ctrl u_sm (
+
+          .rst_n              (reset_ssn          ),            
+          .clk                (mclk               ),            
+
+  // Wishbone bus
+          .wbs_cyc_i          (reg_sm_cs          ),            
+          .wbs_stb_i          (reg_sm_cs          ),            
+          .wbs_adr_i          (reg_addr[4:0]      ), 
+          .wbs_we_i           (reg_wr             ), 
+          .wbs_dat_i          (reg_wdata          ), 
+          .wbs_sel_i          (reg_be             ), 
+          .wbs_dat_o          (reg_sm_rdata       ), 
+          .wbs_ack_o          (reg_sm_ack         ), 
+
+  // Motor outputs
+          .motor_a1           (sm_a1              ),  
+          .motor_a2           (sm_a2              ),  
+          .motor_b1           (sm_b1              ),  
+          .motor_b2           (sm_b2              )   
+
+);
+
+
+//------------------------------------------
+// clock gen
+//-----------------------------------------
 
 clkgen u_clkgen ( 
 
    // Global Reset/clok
-      .reset_n                 (reset_n                 ),
+      .reset_n                 (reset_ssn               ),
       .mclk                    (mclk                    ),
 
     // Clock from Pad
@@ -215,61 +274,99 @@ clkgen u_clkgen (
    );
 
 
+//----------------------------------------
+// pinmux
+//---------------------------------------
 
 pinmux u_pinmux(
 
     //-----------------------------------------------------------------------
     // MAC-Tx Signal
     //-----------------------------------------------------------------------
-    .mac_tx_clk              (pad_mac_tx_clk  ),
-    .mac_tx_en               (mac_tx_en       ),
-    .mac_tx_er               (mac_tx_er       ),
-    .mac_txd                 (mac_txd         ),
+          .mac_tx_clk         (pad_mac_tx_clk     ),
+          .mac_tx_en          (mac_tx_en          ),
+          .mac_tx_er          (mac_tx_er          ),
+          .mac_txd            (mac_txd            ),
                    
     //-----------------------------------------------------------------------
     // MAC-Rx Signal
     //-----------------------------------------------------------------------
-    .mac_rx_clk              (pad_mac_rx_clk  ),
-    .mac_rx_er               (mac_rx_er       ),
-    .mac_rx_dv               (mac_rx_dv       ),
-    .mac_rxd                 (mac_rxd         ),
-    .mac_crs                 (mac_crs         ),
+          .mac_rx_clk         (pad_mac_rx_clk     ),
+          .mac_rx_er          (mac_rx_er          ),
+          .mac_rx_dv          (mac_rx_dv          ),
+          .mac_rxd            (mac_rxd            ),
+          .mac_crs            (mac_crs            ),
                    
                    
     //-----------------------------------------------------------------------
     // MDIO Signal
     //-----------------------------------------------------------------------
-    .mdio_clk               (mdio_clk     ),
-    .mdio_in                (mdio_in      ),
-    .mdio_out_en            (mdio_out_en  ),
-    .mdio_out               (mdio_out     ),
+          .mdio_clk           (mdio_clk           ),
+          .mdio_in            (mdio_in            ),
+          .mdio_out_en        (mdio_out_en        ),
+          .mdio_out           (mdio_out           ),
 
     //-------------------------------------
     // Master UART TXD
     //-------------------------------------
-    .uartm_rxd              (uartm_rxd   ),
-    .uartm_txd              (uartm_txd   ),
+          .uartm_rxd          (uartm_rxd          ),
+          .uartm_txd          (uartm_txd          ),
 
     //-------------------------------------
     // SPI SLAVE
     //-------------------------------------
-     .spis_sck              (spis_sck            ),
-     .spis_ssn              (spis_ssn            ),
-     .spis_miso             (spis_miso           ),
-     .spis_mosi             (spis_mosi           ),
+          .spis_sck           (spis_sck           ),
+          .spis_ssn           (spis_ssn           ),
+          .spis_miso          (spis_miso          ),
+          .spis_mosi          (spis_mosi          ),
 
 
     //-------------------------------------
     // External IO
     //-------------------------------------
-    .io_in                  (io_in      ),
-    .io_out                 (io_out     ),
-    .io_oeb                 (io_oeb     )
-
+          .io_in              (io_in              ),
+          .io_out             (io_out             ),
+          .io_oeb             (io_oeb             ),
+                                
+    //-------------------------------------
+    // Stpper Motor outputs
+    //-------------------------------------
+          .sm_a1              (sm_a1              ),  
+          .sm_a2              (sm_a2              ),  
+          .sm_b1              (sm_b1              ),  
+          .sm_b2              (sm_b2              )   
 
 
 
 );
+
+//-------------------------------------------------
+// Register Block Selection Logic
+//-------------------------------------------------
+reg [1:0] reg_blk_sel;
+
+always @(posedge mclk or negedge reset_ssn)
+begin
+   if(reset_ssn == 1'b0) begin
+     reg_blk_sel <= 'h0;
+   end
+   else begin
+      if(reg_cs) reg_blk_sel <= reg_addr[7:6];
+   end
+end
+
+assign reg_rdata = (reg_blk_sel    == `SEL_GLBL)  ? {reg_glbl_rdata} : 
+	               (reg_blk_sel    == `SEL_SM)    ? {reg_sm_rdata} :
+	               'h0;
+
+assign reg_ack   = (reg_blk_sel    == `SEL_GLBL)  ? reg_glbl_ack   : 
+	               (reg_blk_sel    == `SEL_SM)    ? reg_sm_ack   : 
+	               1'b0;
+
+assign reg_glbl_cs  = (reg_addr[7:6] == `SEL_GLBL) ? reg_cs : 1'b0;
+assign reg_sm_cs    = (reg_addr[7:6] == `SEL_SM)   ? reg_cs : 1'b0;
+
+
 
 
 

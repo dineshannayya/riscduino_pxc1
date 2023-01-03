@@ -46,10 +46,13 @@ set ::env(VERILOG_FILES) "\
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv       \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/registers.v          \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_ctl.v            \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/prescaler.v          \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/reset_sync.sv        \
         $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux_top.sv \
         $::env(DESIGN_DIR)/../../verilog/rtl/glbl/src/glbl_cfg.sv     \
         $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux.sv     \
         $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/clkgen.sv     \
+        $::env(DESIGN_DIR)/../../verilog/rtl/sm_ctrl/src/sm_ctrl.sv     \
 	"
 
 set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/ ]
@@ -72,7 +75,7 @@ set ::env(SCAN_TOTAL_CHAINS) 8
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 250 300"
+set ::env(DIE_AREA) "0 0 500 300"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
